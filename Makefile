@@ -42,8 +42,14 @@ bench-swagger-gen: ## generate code to benchmark your deployed api with k6 (see 
 ########
 
 lint: ## lints the entire codebase
-	golangci-lint run ./... --config=./.golangci.toml && \
-	if [ $$(gofumpt -e -l ./ | wc -l) == "0" ] ; then exit 0; else exit 1; fi
+	@golangci-lint run ./... --config=./.golangci.toml && \
+	if [ $$(gofumpt -e -l ./ | wc -l) == "0" ] ; \
+		then exit 0; \
+	else \
+		echo "these files needs to be gofumpt-ed"; \
+		gofumpt -e -l ./; \
+		exit 1; \
+	fi
 
 #######
 # sec #
