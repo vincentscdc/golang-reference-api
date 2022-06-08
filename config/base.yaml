@@ -1,0 +1,15 @@
+application:
+  port: 8000
+  prettylog: false
+  url:
+    host: "localhost:8000"
+    schemes: ["https"]
+  timeouts:
+    readTimeout: "2s"      
+    readHeaderTimeout: "1s"
+    writeTimeout: "2s"     
+    idleTimeout: "1m"      
+observability:
+  collector:
+    host: "127.0.0.1"
+    port: 4317

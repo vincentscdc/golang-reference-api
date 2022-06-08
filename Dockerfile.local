@@ -1,0 +1,68 @@
+ARG GO_VERSION=1.18.2
+
+###########
+# MODULES #
+###########
+FROM golang:${GO_VERSION} AS modules
+
+WORKDIR /src
+
+COPY ./go.mod ./go.sum ./
+
+######## START HACK FOR LOCAL BUILD OF PRIVATE MODULES 
+# Hack for DinD
+ARG GITHUB_USER="none"
+ARG GITHUB_PERSONAL_ACCESS_TOKEN="none"
+
+RUN echo "machine github.com login $GITHUB_USER password $GITHUB_PERSONAL_ACCESS_TOKEN" > ~/.netrc
+######## END HACK FOR LOCAL BUILD OF PRIVATE MODULES 
+
+# private go packages
+ENV GOPRIVATE=github.com/monacohq/*
+
+# we don't need the --mount-type ssh as we don't use the ssh-agent keys
+RUN go mod download
+
+
+###########
+# BUILDER #
+###########
+FROM golang:${GO_VERSION} AS builder
+
+COPY --from=modules /go/pkg /go/pkg
+
+RUN useradd -u 10001 nonroot
+
+WORKDIR /src
+
+COPY ./ ./
+
+ARG LAST_MAIN_COMMIT_HASH
+ARG LAST_MAIN_COMMIT_TIME
+ENV FLAG="-X main.CommitTime=${LAST_MAIN_COMMIT_TIME}"
+ENV FLAG="$FLAG -X main.CommitHash=${LAST_MAIN_COMMIT_HASH}"
+
+RUN CGO_ENABLED=0 go build \
+    -installsuffix 'static' \
+    -ldflags "-s -w $FLAG" \
+    -buildvcs=true \
+    -o /api ./cmd/api/*.go
+    
+# removing upx optim locally, as it seems to trigger a seg fault
+
+
+#########
+# FINAL #
+#########
+FROM scratch AS final
+
+COPY --from=builder /etc/passwd /etc/passwd
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+
+COPY ./config /config
+
+COPY --from=builder /api /api
+
+USER nonroot
+
+CMD ["/api"]
