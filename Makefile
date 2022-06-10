@@ -1,4 +1,4 @@
-.PHONY: help test test-race test-leak bench bench-compare bench-swagger-gen lint sec-scan upgrade release release-tag changelog-gen changelog-commit
+.PHONY: help test test-race test-leak bench bench-compare bench-swagger-gen lint sec-scan upgrade release release-tag changelog-gen changelog-commit proto-gen proto-lint
 
 help: ## show this help
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z0-9_-]+:.*?## / {sub("\\\\n",sprintf("\n%22c"," "), $$2);printf "\033[36m%-25s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -182,3 +182,19 @@ sql-gen-sqlboiler:
 
 swagger-gen:
 	swag init -d ./cmd/api --parseDependency --outputTypes go --output "./internal/docs/"
+
+
+###########
+# proto-gen #
+###########
+proto-gen: proto-lint
+	@printf "Generating protos files....\n"
+	@find ./protos -type f -name "*.proto" | xargs -I {} protoc --go_out=./internal/port/grpc --go_opt=paths=source_relative \
+	 --go-grpc_out=./internal/port/grpc --go-grpc_opt=paths=source_relative {}
+
+proto-lint:
+	@printf "Linting protos files...\n"
+	@buf lint ./protos
+
+proto-clean:
+	rm -rf ./internal/port/grpc/protos

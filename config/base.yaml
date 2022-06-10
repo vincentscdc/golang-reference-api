@@ -8,7 +8,9 @@ application:
     readTimeout: "2s"      
     readHeaderTimeout: "1s"
     writeTimeout: "2s"     
-    idleTimeout: "1m"      
+    idleTimeout: "1m"
+grpc:
+  port: 9000
 observability:
   collector:
     host: "127.0.0.1"

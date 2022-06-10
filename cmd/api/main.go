@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -12,6 +13,8 @@ import (
 
 	"bnpl/internal/configuration"
 	"bnpl/internal/docs"
+	"bnpl/internal/port/grpc/protos/creditline/v1"
+	grpcuserfacing "bnpl/internal/port/grpc/userfacing"
 	"bnpl/internal/port/rest"
 	"bnpl/internal/port/rest/internalfacing"
 	"bnpl/internal/port/rest/userfacing"
@@ -23,6 +26,7 @@ import (
 	"github.com/rs/zerolog/log"
 	httpSwagger "github.com/swaggo/http-swagger"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+	"google.golang.org/grpc"
 )
 
 // nolint: gochecknoglobals // only allowed global vars - filled at build time - do not change
@@ -140,36 +144,65 @@ func main() { // nolint: cyclop // temporary, will be moved to multiple funcs
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 
+	// Start http server
 	go func() {
-		<-sig
-
-		const shutdownGracePeriod = 30 * time.Second
-
-		// Shutdown signal with grace period of 30 seconds
-		shutdownCtx, cancel := context.WithTimeout(serverCtx, shutdownGracePeriod)
-		defer cancel()
-
-		go func() {
-			<-shutdownCtx.Done()
-
-			if errors.Is(shutdownCtx.Err(), context.DeadlineExceeded) {
-				log.Error().Err(err).Msg("graceful shutdown timed out.. forcing exit.")
-			}
-		}()
-
-		// Trigger graceful shutdown
-		err := srv.Shutdown(shutdownCtx)
-		if err != nil {
-			log.Error().Err(err).Msg("error shutting down")
+		if err = srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			log.Error().Err(err).Msg("")
 		}
 
-		serverStopCtx()
+		// Wait for server context to be stopped
+		<-serverCtx.Done()
 	}()
 
-	if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-		log.Error().Err(err).Msg("")
+	// start grpc server
+	addr := fmt.Sprintf(":%d", cfg.Grpc.Port)
+
+	lis, err := net.Listen("tcp", addr)
+	if err != nil {
+		log.Error().Err(err).Msgf("failed to listen on address %s", addr)
+
+		return
 	}
 
-	// Wait for server context to be stopped
-	<-serverCtx.Done()
+	grpcServer := grpc.NewServer()
+	server := grpcuserfacing.NewPayLaterServer()
+
+	creditline.RegisterPayLaterServiceServer(grpcServer, server)
+
+	go func() {
+		log.Info().Msgf("start to listen grpc server on %s", addr)
+
+		err = grpcServer.Serve(lis)
+		if err != nil {
+			log.Error().Err(err).Msg("failed to serve grpc server")
+
+			return
+		}
+	}()
+
+	<-sig
+
+	const shutdownGracePeriod = 30 * time.Second
+
+	// Shutdown signal with grace period of 30 seconds
+	shutdownCtx, cancel := context.WithTimeout(serverCtx, shutdownGracePeriod)
+	defer cancel()
+
+	go func() {
+		<-shutdownCtx.Done()
+
+		if errors.Is(shutdownCtx.Err(), context.DeadlineExceeded) {
+			log.Fatal().Err(err).Msg("graceful shutdown timed out.. forcing exit.")
+		}
+	}()
+
+	// Trigger graceful shutdown
+	err = srv.Shutdown(shutdownCtx)
+	if err != nil {
+		log.Error().Err(err).Msg("error shutting down")
+	}
+
+	grpcServer.GracefulStop()
+
+	serverStopCtx()
 }

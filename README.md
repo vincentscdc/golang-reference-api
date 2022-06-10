@@ -82,6 +82,21 @@ make swagger-gen
 
 Unfortunately, the generated json doesn't take into account the dynamic variable update in main.go, so the only valid swagger json definition is served by the go binary.
 
+
+### Protocol Buffer generate
+- protoc v3.19.4 (https://github.com/protocolbuffers/protobuf/releases
+- brew install protobuf (mac only)
+- brew install bufbuild/buf/buf
+
+```bash
+go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28
+go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2
+```
+
+```bash
+make proto-gen
+```
+
 ### k6 Benchmarks
 
 Run your app and go to your [swagger json](http://localhost:3000/v1/swagger/) to gen the benchmarks with the openapi generator.

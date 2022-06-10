@@ -17,6 +17,9 @@ type Config struct {
 			IdleTimeout       time.Duration
 		}
 	}
+	Grpc struct {
+		Port int
+	}
 	Observability struct {
 		Collector struct {
 			Host string

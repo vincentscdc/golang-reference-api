@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package creditline.v1;
+
+option go_package = "internal/port/grpc/protos/creditline";
+
+message GetCreditLineRequest {}
+
+message GetCreditLineResponse {
+  CreditInfo credit_info = 1;
+  Error error = 2;
+}
+
+message CreditInfo {
+  string total_amount = 1;
+  string available_amount = 2;
+  string currency = 3;
+  string status = 4;
+}
+
+message Error {
+  string message = 1;
+}
+
+service PayLaterService {
+  rpc GetCreditLine(creditline.v1.GetCreditLineRequest) returns (creditline.v1.GetCreditLineResponse);
+}

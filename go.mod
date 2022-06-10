@@ -14,6 +14,8 @@ require (
 	github.com/swaggo/swag v1.8.2
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.32.0
 	go.uber.org/goleak v1.1.12
+	google.golang.org/grpc v1.47.0
+	google.golang.org/protobuf v1.28.0
 )
 
 require (
@@ -50,8 +52,6 @@ require (
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/tools v0.1.10 // indirect
 	google.golang.org/genproto v0.0.0-20220607223854-30acc4cbd2aa // indirect
-	google.golang.org/grpc v1.47.0 // indirect
-	google.golang.org/protobuf v1.28.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	olympos.io/encoding/edn v0.0.0-20201019073823-d3554ca0b0a3 // indirect
