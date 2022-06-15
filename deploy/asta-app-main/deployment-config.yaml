@@ -1,0 +1,50 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: golang-reference-api
+  annotations:
+    app-image-repo: 929151461716.dkr.ecr.ap-southeast-1.amazonaws.com/app-golang-reference-api
+spec:
+  replicas: 1
+  template:
+    spec:
+      nodeSelector:
+        group: asta-app-main-general
+      serviceAccountName: golang-reference-api-staging
+      containers:
+      - name: api
+        env:
+          - name: APP_ENV
+            value: staging
+          - name: AWS_SM_REGION
+            value: ap-southeast-1
+          - name: AWS_SM_ID
+            value: asta/eks/golang-reference-api/app-credentials
+          - name: AWS_DEFAULT_REGION
+            value: ap-southeast-1
+          - name: APP_HOST
+            value: localhost
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+          limits:
+            cpu: 100m
+            memory: 100Mi
+        livenessProbe:
+            httpGet:
+                path: /healthz
+                port: 8000
+            initialDelaySeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 5
+            periodSeconds: 30
+        readinessProbe:
+            httpGet:
+                path: /healthz
+                port: 8000
+            initialDelaySeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 5
+            periodSeconds: 30

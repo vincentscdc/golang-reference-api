@@ -1,0 +1,166 @@
+parameters:
+  workspace_directory:
+    type: string
+    default: "/home/circleci/app"
+
+version: 2.1
+
+# Enable dynamic workflows
+setup: true
+
+orbs:
+  aws-ecr: circleci/aws-ecr@7.2.0
+  aws-eks: circleci/aws-eks@2.2.0
+  kubernetes: circleci/kubernetes@1.3.0
+  path-filtering: circleci/path-filtering@0.1.3
+
+executors:
+  default-executor:
+    docker:
+      - image: cimg/base:stable
+    working_directory: << pipeline.parameters.workspace_directory >>
+  go-executor:
+    docker:
+      - image: cimg/go:1.18
+    working_directory: << pipeline.parameters.workspace_directory >>
+
+commands:
+  docker-build:
+    steps:
+      - checkout
+      - setup_remote_docker:
+          version: "20.10.14"
+          docker_layer_caching: true
+      - add_ssh_keys # WARNING: DO NOT ADD A DEPLOY KEY DIRECTLY FROM circleci, create in github and add the ssh_key manually, otherwise it won't be injected here
+      - run: make docker-build-ci
+
+  ecr-push:
+    parameters:
+      image-name:
+        type: string
+        description: "ecr url / app name (for ex 123456123456.dkr.ecr.ap-southeast-1.amazonaws.com/app-golang-reference-api)"
+      image-tag:
+        type: string
+        description: can be a tag (v1.0.1) or a commit sha1 ("${CIRCLE_SHA1}") for example
+    steps:
+      - aws-ecr/ecr-login:
+          region: AWS_REGION
+          aws-access-key-id: AWS_ECR_ACCESS_KEY_ID
+          aws-secret-access-key: AWS_ECR_SECRET_ACCESS_KEY
+      - run: 
+          name: "tag and push image"
+          command: |
+            docker tag golangreferenceapi << parameters.image-name >>:<< parameters.image-tag >>
+            docker push << parameters.image-name >>:<< parameters.image-tag >>
+
+jobs:
+  linter:
+    executor: go-executor
+    steps:
+      - checkout
+      - run:
+          name: Install golangci-lint/run-lint
+          command: |
+            curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.46.2
+      - run:
+          name: Install gofumpt
+          command: |
+            go install mvdan.cc/gofumpt@latest
+      - run:
+          name: Linter check
+          command: |
+            make lint
+
+  test:
+    executor: go-executor
+    steps:
+      - checkout
+      - run: go mod download
+      - run: go install github.com/mattn/goveralls@latest
+      - run: go test -v  ./... -cover -race -covermode=atomic -coverprofile=./coverage.out
+      - run: goveralls -covermode=atomic -coverprofile=./coverage.out -service=circle-ci -repotoken=$COVERALLS_TOKEN
+
+  sec-scan:
+    executor: go-executor
+    steps:
+      - checkout
+      - run: curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b $(go env GOPATH)/bin v0.28.0
+      - run:
+          name: Trivy sec scan
+          command: |
+            make sec-scan
+
+  conv-commits-check:
+    executor: default-executor
+    steps:
+      - checkout
+      - run:
+          name: Install cog
+          command: |
+            mkdir -p "$HOME/.local/bin" || exit
+            VERSION=5.1.0
+            TAR="cocogitto-$VERSION-x86_64-unknown-linux-musl.tar.gz"
+            cd "$HOME/.local/bin" || exit
+            curl -OL https://github.com/cocogitto/cocogitto/releases/download/"$VERSION"/"$TAR"
+            tar xfz $TAR
+      - run:
+          name: cog check of conventional commits
+          command: |
+            cog check --from-latest-tag --ignore-merge-commits
+      - run:
+          name: changelog generation
+          command: |
+            cog changelog
+
+  docker-build-tag-push:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - docker-build
+      - ecr-push:
+          image-name: "${AWS_ECR_REGISTRY_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/app-golang-reference-api"
+          image-tag: "${CIRCLE_TAG:-$CIRCLE_SHA1}"
+
+workflows:
+  version: 2
+  docker-build-tag-push-deploy:
+    jobs:
+      - linter:
+          filters:
+            tags:
+              only: /.*/
+      - test:
+          filters:
+            tags:
+              only: /.*/
+      - sec-scan:
+          filters:
+            tags:
+              only: /.*/
+      - conv-commits-check:
+          filters:
+            tags:
+              only: /.*/
+      - docker-build-tag-push:
+          context: golang-reference-api-dev
+          requires:
+            - linter
+            - test
+            - sec-scan    
+            - conv-commits-check
+          filters:
+            tags:
+              only: /.*/
+            branches:
+              only:
+                - main
+      - path-filtering/filter:
+          name: deploy-api
+          base-revision: main
+          mapping: |
+            deploy/adev-app-main/.* dev-changed true
+            deploy/asta-app-main/.* sta-changed true
+          config-path: .circleci/eks-deploy.yaml
+          filters:
+            tags:
+              only: /.*/

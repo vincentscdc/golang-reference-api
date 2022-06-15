@@ -1,0 +1,15 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: golang-reference-api
+spec:
+  replicas: 1
+  template:
+    spec:
+      containers:
+        - name: api
+          imagePullPolicy: IfNotPresent
+          image: bnpl:latest
+      nodeSelector:
+      volumes:
+      serviceAccountName:

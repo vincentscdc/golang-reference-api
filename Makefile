@@ -43,7 +43,7 @@ bench-swagger-gen: ## generate code to benchmark your deployed api with k6 (see 
 
 lint: ## lints the entire codebase
 	@golangci-lint run ./... --config=./.golangci.toml && \
-	if [ $$(gofumpt -e -l ./ | wc -l) == "0" ] ; \
+	if [ $$(gofumpt -e -l ./ | wc -l) = "0" ] ; \
 		then exit 0; \
 	else \
 		echo "these files needs to be gofumpt-ed"; \
@@ -104,30 +104,44 @@ docker-build-local: ## docker build locally, works on m1 macs
 # release #
 ###########
 
-release: release-tag changelog-gen changelog-commit ## create a new tag to release this module
+release: release-tag changelog-gen changelog-commit deploy-dev ## create a new tag to release this module
 
-MOD_VERSION = $(shell git describe --abbrev=0 --tags")
-	
-release-tag: 
-	@printf "here is the latest tag present: "; \
-	printf "$(MOD_VERSION)\n"; \
-	printf "what tag do you want to give? (use the form vX.X.X): "; \
-	read -r TAG && \
-	git tag $$TAG && \
-	printf "\nrelease tagged $$TAG !\n"
+CAL_VER := v$(shell date "+%Y.%m.%d.%H%M")
+STAGING_YAML = deploy/asta-app-main/kustomization.yaml
+DEV_YAML = deploy/adev-app-main/kustomization.yaml
+
+release-tag:
+	git tag $(CAL_VER)
+
+deploy-dev:
+	sed -i '' "s/newTag:.*/newTag: $(CAL_VER)/" $(DEV_YAML)
+	git commit -S -m "ci: deploy tag $(CAL_VER) to adev" $(DEV_YAML)
+	git push origin main
+	git push origin $(CAL_VER)
+
+deploy-staging:
+	@( \
+	printf "Select a tag to deploy to staging:\n"; \
+	select tag in `git tag --sort=-committerdate | head -n 10` ; do	\
+	   sed -i '' "s/newTag:.*/newTag: $$tag/" $(STAGING_YAML); \
+       git commit -S -m "ci: deploy tag $$tag to staging" $(STAGING_YAML); \
+       git push origin main; \
+       break; \
+	done )
 
 #############
 # changelog #
 #############
 
-MESSAGE_CHANGELOG_COMMIT="update CHANGELOG.md for $(MOD_VERSION)"
+MOD_VERSION = $(shell git describe --abbrev=0 --tags)
+
+MESSAGE_CHANGELOG_COMMIT="chore: update CHANGELOG.md for $(MOD_VERSION)"
 
 changelog-gen: ## generates the changelog in CHANGELOG.md
-	@git cliff \
-		-o ./CHANGELOG.md && \
+	@cog changelog > ./CHANGELOG.md && \
 	printf "\nchangelog generated!\n"
+	git add CHANGELOG.md
 
-# keep this commit unconventional so it doesnt appear in the changelog
 changelog-commit:
 	git commit -m $(MESSAGE_CHANGELOG_COMMIT) ./CHANGELOG.md
 

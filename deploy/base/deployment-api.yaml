@@ -1,0 +1,52 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: golang-reference-api
+  labels:
+    app.kubernetes.io/name: golang-reference-api
+    app.kubernetes.io/instance: api
+  annotations:
+    app-containers: api
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: golang-reference-api
+      app.kubernetes.io/instance: api
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: golang-reference-api
+        app.kubernetes.io/instance: api
+    spec:
+      volumes:
+      - name: token-vol
+        projected:
+          sources:
+          - serviceAccountToken:
+              path: token
+      serviceAccountName: golang-reference-api
+      nodeSelector:
+        group: main
+      dnsConfig:
+        options:
+          - name: single-request-reopen
+          - name: ndots
+            value: "1"
+      containers:
+      - name: api
+        image: 3onaco/golang-reference-api
+        imagePullPolicy: IfNotPresent
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+          limits:
+            cpu: 100m
+            memory: 100Mi

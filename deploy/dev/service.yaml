@@ -1,0 +1,14 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: golang-reference-api
+spec:
+  selector:
+    app.kubernetes.io/name: golang-reference-api
+    app.kubernetes.io/instance: api
+  ports:
+    - name: app
+      protocol: TCP
+      port: 80
+      targetPort: 8000

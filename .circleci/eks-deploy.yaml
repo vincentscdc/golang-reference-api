@@ -1,0 +1,61 @@
+version: 2.1
+
+orbs:
+  aws-eks: circleci/aws-eks@2.2.0
+
+parameters:
+  dev-changed:
+    type: boolean
+    default: false
+  sta-changed:
+    type: boolean
+    default: false
+
+jobs:
+  deploy-api-kustomize:
+    docker:
+      - image: cimg/base:stable
+    parameters:
+      kustomize-folder:
+        description: kustomize folder to deploy, for example adev-app-main
+        type: string
+      kubectl-version:
+        type: string
+        description: kubectl version
+        default: "latest"
+    steps:
+      - checkout
+      - aws-eks/update-kubeconfig-with-authenticator:
+          aws-region: ${AWS_REGION}
+          cluster-name: ${EKS_CLUSTER_NAME}
+          install-kubectl: true
+          kubectl-version: << parameters.kubectl-version >>
+      - run:
+          name: Apply kustomization
+          command: |
+            kubectl kustomize deploy/<< parameters.kustomize-folder >> | kubectl -n $EKS_NAMESPACE apply -f -
+
+
+workflows:
+  deploy-api-dev:
+    when: << pipeline.parameters.dev-changed >>
+    jobs:
+      - deploy-api-kustomize:
+          context: golang-reference-api-dev
+          kustomize-folder: adev-app-main
+          filters:
+            tags:
+              only: /.*/
+
+  deploy-api-staging:
+    when: << pipeline.parameters.sta-changed >>
+    jobs:
+      - deploy-api-kustomize:
+          context: golang-reference-api-staging
+          kustomize-folder: asta-app-main
+          filters:
+            branches:
+              only:
+                - main
+            tags:
+              only: /.*/
