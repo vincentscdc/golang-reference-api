@@ -1,4 +1,4 @@
-module bnpl
+module golangreferenceapi
 
 go 1.18
 

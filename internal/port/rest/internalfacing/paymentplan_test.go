@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"bnpl/internal/port/rest"
+	"golangreferenceapi/internal/port/rest"
 
 	"github.com/monacohq/golang-common/transport/http/handlerwrap"
 )

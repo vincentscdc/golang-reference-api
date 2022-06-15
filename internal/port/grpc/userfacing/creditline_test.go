@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"bnpl/internal/port/grpc/bnplapi/creditline/v1"
+	"golangreferenceapi/internal/port/grpc/bnplapi/creditline/v1"
 )
 
 func TestPayLaterServer_GetCreditLine(t *testing.T) {

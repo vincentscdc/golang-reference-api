@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"bnpl/internal/port/rest"
+	"golangreferenceapi/internal/port/rest"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/rs/zerolog"
