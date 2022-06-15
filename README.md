@@ -84,6 +84,8 @@ Unfortunately, the generated json doesn't take into account the dynamic variable
 
 
 ### Protocol Buffer generate
+We rely on buf help us manage the protocol buffer generation and linter.
+
 - protoc v3.19.4 (https://github.com/protocolbuffers/protobuf/releases
 - brew install protobuf (mac only)
 - brew install bufbuild/buf/buf

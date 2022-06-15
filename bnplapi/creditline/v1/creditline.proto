@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package creditline.v1;
 
-option go_package = "internal/port/grpc/protos/creditline";
+option go_package = "internal/port/grpc/bnplapi/creditline";
 
 message GetCreditLineRequest {}
 

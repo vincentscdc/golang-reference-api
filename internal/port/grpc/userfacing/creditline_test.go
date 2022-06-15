@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"bnpl/internal/port/grpc/protos/creditline/v1"
+	"bnpl/internal/port/grpc/bnplapi/creditline/v1"
 )
 
 func TestPayLaterServer_GetCreditLine(t *testing.T) {

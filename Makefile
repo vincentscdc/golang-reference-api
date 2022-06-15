@@ -189,12 +189,11 @@ swagger-gen:
 ###########
 proto-gen: proto-lint
 	@printf "Generating protos files....\n"
-	@find ./protos -type f -name "*.proto" | xargs -I {} protoc --go_out=./internal/port/grpc --go_opt=paths=source_relative \
-	 --go-grpc_out=./internal/port/grpc --go-grpc_opt=paths=source_relative {}
+	@buf generate --error-format=json
 
 proto-lint:
 	@printf "Linting protos files...\n"
-	@buf lint ./protos
+	@buf lint
 
 proto-clean:
 	rm -rf ./internal/port/grpc/protos
