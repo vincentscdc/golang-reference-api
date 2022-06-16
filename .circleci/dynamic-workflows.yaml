@@ -4,14 +4,43 @@ orbs:
   aws-eks: circleci/aws-eks@2.2.0
 
 parameters:
+  workspace_directory:
+    type: string
+    default: "/home/circleci/app"
   dev-changed:
     type: boolean
     default: false
   sta-changed:
     type: boolean
     default: false
+  api-changed:
+    type: boolean
+    default: false
+
+executors:
+  spectral-executor:
+    docker:
+      - image: bitnami/git:latest
+    working_directory: << pipeline.parameters.workspace_directory >>
 
 jobs:
+  api-spec-lint:
+    executor: spectral-executor
+    steps:
+      - checkout
+      - run:
+          name: "Checkout Monaco Spectral Ruleset"
+          command: git clone "git@github.com:monacohq/api-standards-linter.git" --branch "main" ./spectral
+      - run: "[ -d lint-results ] || mkdir lint-results"
+      - run:
+          name: "Install Spectral"
+          command: curl -L https://raw.github.com/stoplightio/spectral/master/scripts/install.sh | sh
+      - run:
+          name: "Run Spectral Lint"
+          command: /usr/local/bin/spectral lint -r ./spectral/monaco.yml -o lint-results/golang-reference-api.xml -f junit internal/docs/swagger.json
+      - store_test_results:
+          path: lint-results
+
   deploy-api-kustomize:
     docker:
       - image: cimg/base:stable
@@ -35,8 +64,12 @@ jobs:
           command: |
             kubectl kustomize deploy/<< parameters.kustomize-folder >> | kubectl -n $EKS_NAMESPACE apply -f -
 
-
 workflows:
+  api-spec-lint:
+    when: << pipeline.parameters.api-changed >>
+    jobs:
+      - api-spec-lint
+
   deploy-api-dev:
     when: << pipeline.parameters.dev-changed >>
     jobs:

@@ -47,7 +47,7 @@ commands:
           region: AWS_REGION
           aws-access-key-id: AWS_ECR_ACCESS_KEY_ID
           aws-secret-access-key: AWS_ECR_SECRET_ACCESS_KEY
-      - run: 
+      - run:
           name: "tag and push image"
           command: |
             docker tag golangreferenceapi << parameters.image-name >>:<< parameters.image-tag >>
@@ -146,7 +146,7 @@ workflows:
           requires:
             - linter
             - test
-            - sec-scan    
+            - sec-scan
             - conv-commits-check
           filters:
             tags:
@@ -155,12 +155,13 @@ workflows:
               only:
                 - main
       - path-filtering/filter:
-          name: deploy-api
+          name: dynamic-workflows
           base-revision: main
           mapping: |
             deploy/adev-app-main/.* dev-changed true
             deploy/asta-app-main/.* sta-changed true
-          config-path: .circleci/eks-deploy.yaml
+            internal/docs/swagger.json api-changed true
+          config-path: .circleci/dynamic-workflows.yaml
           filters:
             tags:
               only: /.*/
