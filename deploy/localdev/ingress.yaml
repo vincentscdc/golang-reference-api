@@ -1,7 +1,7 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: bnpl
+  name: golang-reference-api
   annotations:
     kubernetes.io/ingress.class: "nginx"
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
@@ -20,10 +20,10 @@ spec:
         number: 80
   tls:
     - hosts:
-        - bnpl.fiat.dev
-      secretName: bnpl-fiat-dev
+        - golang-reference-api.reference.dev
+      secretName: golang-reference-api-reference-dev
   rules:
-    - host: bnpl.fiat.dev
+    - host: golang-reference-api.reference.dev
       http:
         paths:
         - path: /
