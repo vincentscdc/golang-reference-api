@@ -50,7 +50,7 @@ commands:
       - run:
           name: "tag and push image"
           command: |
-            docker tag golangreferenceapi << parameters.image-name >>:<< parameters.image-tag >>
+            docker tag golang-reference-api << parameters.image-name >>:<< parameters.image-tag >>
             docker push << parameters.image-name >>:<< parameters.image-tag >>
 
 jobs:
