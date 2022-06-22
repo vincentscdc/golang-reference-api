@@ -1,2 +1,18 @@
 resources:
 - ../base
+
+namespace: prod-monaco
+
+nameSuffix: "-production"
+
+commonLabels:
+  app.kubernetes.io/name: golang-reference-api
+  app.kubernetes.io/version: production
+
+images:
+- name: 3onaco/golang-reference-api
+  newName: 929151461716.dkr.ecr.ap-southeast-1.amazonaws.com/app-golang-reference-api
+  newTag: dummy
+
+patchesStrategicMerge:
+- deployment-config.yaml

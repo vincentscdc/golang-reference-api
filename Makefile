@@ -107,6 +107,7 @@ docker-build-local: ## docker build locally, works on m1 macs
 release: release-tag changelog-gen changelog-commit deploy-dev ## create a new tag to release this module
 
 CAL_VER := v$(shell date "+%Y.%m.%d.%H%M")
+PRODUCTION_YAML = deploy/apro-app-main/kustomization.yaml
 STAGING_YAML = deploy/asta-app-main/kustomization.yaml
 DEV_YAML = deploy/adev-app-main/kustomization.yaml
 
@@ -119,15 +120,28 @@ deploy-dev:
 	git push origin main
 	git push origin $(CAL_VER)
 
-deploy-staging:
+deploy-staging: ## deploy to staging env with a release tag
 	@( \
 	printf "Select a tag to deploy to staging:\n"; \
 	select tag in `git tag --sort=-committerdate | head -n 10` ; do	\
-	   sed -i '' "s/newTag:.*/newTag: $$tag/" $(STAGING_YAML); \
-       git commit -S -m "ci: deploy tag $$tag to staging" $(STAGING_YAML); \
-       git push origin main; \
-       break; \
+		sed -i '' "s/newTag:.*/newTag: $$tag/" $(STAGING_YAML); \
+		git commit -S -m "ci: deploy tag $$tag to staging" $(STAGING_YAML); \
+		git push origin main; \
+		break; \
 	done )
+
+deploy-production: confirm_deployment ## deploy to production env with a release tag
+	@( \
+	printf "Select a tag to deploy to production:\n"; \
+	select tag in `git tag --sort=-committerdate | head -n 10` ; do	\
+		sed -i '' "s/newTag:.*/newTag: $$tag/" $(PRODUCTION_YAML); \
+		git commit -S -m "ci: deploy tag $$tag to production" $(PRODUCTION_YAML); \
+		git push origin main; \
+		break; \
+	done )
+
+confirm_deployment:
+	@echo -n "Are you sure to deploy in production env? [y/N] " && read ans && [ $${ans:-N} = y ]
 
 #############
 # changelog #

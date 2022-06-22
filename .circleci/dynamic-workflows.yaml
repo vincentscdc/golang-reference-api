@@ -2,6 +2,7 @@ version: 2.1
 
 orbs:
   aws-eks: circleci/aws-eks@2.2.0
+  slack: circleci/slack@4.10.1
 
 parameters:
   workspace_directory:
@@ -11,6 +12,9 @@ parameters:
     type: boolean
     default: false
   sta-changed:
+    type: boolean
+    default: false
+  pro-changed:
     type: boolean
     default: false
   api-changed:
@@ -64,6 +68,52 @@ jobs:
           command: |
             kubectl kustomize deploy/<< parameters.kustomize-folder >> | kubectl -n $EKS_NAMESPACE apply -f -
 
+# Note: slack integration requires SLACK_ACCESS_TOKEN (has to be stored in circleci context) and SLACK_DEFAULT_CHANNEL (can be stored as either context or env variable)
+  send-slack-changelog:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - checkout
+      - run:
+          name: Get tag version of the image
+          command: |
+            echo 'TAG_VERSION="$(grep -o 'v...............' deploy/apro-app-main/kustomization.yaml)"' >> $BASH_ENV
+      - slack/notify:
+          event: always
+          custom: |
+            {
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "CHANGELOG - :book:",
+                    "emoji": true
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "Click the button to view changelog - tag version: ${TAG_VERSION}. 
+                    Note: This is a sample production pipeline for golang-reference-api app. 
+                    Hence, approving the workflow will not deploy anything in production."
+                  },
+                  "accessory": {
+                    "type": "button",
+                    "text": {
+                      "type": "plain_text",
+                      "text": "View Changelog",
+                      "emoji": true
+                    },
+                    "value": "click_me_123",
+                    "url": "https://github.com/monacohq/crypto-pnl/blob/${TAG_VERSION}/CHANGELOG.md",
+                    "action_id": "button-action"
+                  }
+                }
+              ]
+            }
+
 workflows:
   api-spec-lint:
     when: << pipeline.parameters.api-changed >>
@@ -92,3 +142,48 @@ workflows:
                 - main
             tags:
               only: /.*/
+
+  deploy-production:
+    when: << pipeline.parameters.pro-changed >>
+    jobs:
+      - slack/on-hold:
+          context: golang-reference-api-prod
+          mentions: "@channel"
+          filters:
+            branches:
+              only:
+                - main
+            tags:
+              only: /.*/
+      - send-slack-changelog:
+          context: golang-reference-api-prod
+          requires:
+            - slack/on-hold
+          filters:
+            branches:
+              only:
+                - main
+            tags:
+              only: /.*/
+      - pause_workflow:
+          type: approval
+          requires:
+            - slack/on-hold
+          filters:
+            branches:
+              only:
+                - main
+            tags:
+              only: /.*/
+      # Note: this app will not be deployed in production, hence the following code snippet is commented out and only for reference
+      # - deploy-api-kustomize:
+      #     context: golang-reference-api-prod
+      #     requires:
+      #       - pause_workflow
+      #     kustomize-folder: apro-app-main
+      #     filters:
+      #       branches:
+      #         only:
+      #           - main
+      #       tags:
+      #         only: /.*/
