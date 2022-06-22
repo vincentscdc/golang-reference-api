@@ -104,21 +104,18 @@ docker-build-local: ## docker build locally, works on m1 macs
 # release #
 ###########
 
-release: release-tag changelog-gen changelog-commit deploy-dev ## create a new tag to release this module
+release: changelog-gen changelog-commit deploy-dev ## create a new tag to release this module
 
 CAL_VER := v$(shell date "+%Y.%m.%d.%H%M")
 PRODUCTION_YAML = deploy/apro-app-main/kustomization.yaml
 STAGING_YAML = deploy/asta-app-main/kustomization.yaml
 DEV_YAML = deploy/adev-app-main/kustomization.yaml
 
-release-tag:
-	git tag $(CAL_VER)
-
 deploy-dev:
 	sed -i '' "s/newTag:.*/newTag: $(CAL_VER)/" $(DEV_YAML)
 	git commit -S -m "ci: deploy tag $(CAL_VER) to adev" $(DEV_YAML)
-	git push origin main
-	git push origin $(CAL_VER)
+	git tag $(CAL_VER)
+	git push --atomic origin $(CAL_VER)
 
 deploy-staging: ## deploy to staging env with a release tag
 	@( \
