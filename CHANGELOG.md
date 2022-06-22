@@ -1,4 +1,15 @@
-## v2022.06.22.1412 - 2022-06-22
+## Unreleased (7d891eb..1184f61)
+#### Bug Fixes
+- change health endpoint according to monaco-k8s spec (#30) - (1184f61) - vincentscdc
+- update dev deployment and tagging in one go (#29) - (5c5a5a9) - Yepeng Liang
+#### Continuous Integration
+- deploy tag v2022.06.22.1412 to adev - (2155685) - Vincent Serpoul
+#### Miscellaneous Chores
+- update CHANGELOG.md for v2022.06.22.1412 - (7d891eb) - Vincent Serpoul
+
+- - -
+
+## Unreleased (4c4d20d..aef1720)
 #### Bug Fixes
 - base local image name - (aef1720) - Vincent Serpoul
 - improve localdev environment - (89c2249) - Vincent Serpoul
