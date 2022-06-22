@@ -1,0 +1,21 @@
+version: 2
+sql:
+  - schema: "./migrations"
+    queries: "./queries"
+    engine: "postgresql"
+    strict_function_checks: true
+    gen:
+      go:
+        package: "db"
+        sql_package: "pgx/v4"
+        out: "../internal/db"
+        emit_interface: true
+        emit_exported_queries: true
+        emit_result_struct_pointers: true
+        emit_params_struct_pointers: true
+        emit_enum_valid_method: true
+        emit_all_enum_values: true
+        output_models_file_name: "entities.go"
+        overrides:
+          - go_type: "github.com/shopspring/decimal.Decimal"
+            db_type: "pg_catalog.numeric"

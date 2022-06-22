@@ -201,6 +201,9 @@ sql-gen-sqlboiler:
 	PSQL_PASS=$$DB_PASSWORD sqlboiler psql -c ./db/sqlboiler.toml \
 	)
 
+sqlc:
+	sqlc generate -f ./database/sqlc.yaml
+
 ###########
 # swagger #
 ###########
