@@ -96,8 +96,8 @@ func main() { // nolint: cyclop // temporary, will be moved to multiple funcs
 
 	httpRouter.Mount("/debug", middleware.Profiler())
 
-	httpRouter.Get("/healthz", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusNoContent)
+	httpRouter.Get("/sys/health", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
 	})
 
 	version := "v1"

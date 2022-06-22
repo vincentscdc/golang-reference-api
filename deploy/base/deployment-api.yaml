@@ -50,3 +50,19 @@ spec:
           limits:
             cpu: 100m
             memory: 100Mi
+        livenessProbe:
+            httpGet:
+                path: /sys/health
+                port: 8000
+            initialDelaySeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 5
+            periodSeconds: 30
+        readinessProbe:
+            httpGet:
+                path: /sys/health
+                port: 8000
+            initialDelaySeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 5
+            periodSeconds: 30
