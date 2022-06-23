@@ -10,6 +10,8 @@ import (
 const (
 	urlParamUserUUID        = "user_uuid"
 	urlParamPaymentPlanUUID = "uuid"
+	urlParamPaymentUUID     = "payment_uuid"
+	urlParamInstallmentID   = "installments_id"
 )
 
 type PaymentPlanParam struct {

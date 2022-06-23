@@ -16,8 +16,8 @@ test-race: ## launch all tests with race detection
 	go test ./... -cover -race
 
 test-leak: ## launch all tests with leak detection (if possible)
-	go test ./internal/port/rest/userfacing/... -leak
-	go test ./internal/port/rest/internalfacing/... -leak
+	go test ./internal/payments/port/rest/userfacing/... -leak
+	go test ./internal/payments/port/rest/internalfacing/... -leak
 
 #############
 # benchmark #

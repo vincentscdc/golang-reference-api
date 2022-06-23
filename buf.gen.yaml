@@ -1,8 +1,8 @@
 version: v1
 plugins:
   - name: go
-    out: ./internal/port/grpc/bnplapi
+    out: ./internal/payments/port/grpc/bnplapi
     opt: paths=source_relative
   - name: go-grpc
-    out: ./internal/port/grpc/bnplapi
+    out: ./internal/payments/port/grpc/bnplapi
     opt: paths=source_relative

@@ -6,6 +6,8 @@ import (
 	"strings"
 	"testing"
 
+	"golangreferenceapi/internal/payments/service"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/rs/zerolog"
 )
@@ -29,14 +31,9 @@ func TestAddRoutes(t *testing.T) {
 			expectedHTTPStatusCode: http.StatusOK,
 			expectedBody:           `{"credit_info":{"total_amount":"1000","available_amount":"1000","currency":"USDC","status":"active"},"ok":true}`,
 		},
-		{
-			name:                   "happy path for payment plans",
-			httpMethod:             "GET",
-			urlPath:                "/api/pay_later/payment_plans",
-			expectedHTTPStatusCode: http.StatusOK,
-			expectedBody:           `{"ok":true,"payment_plans":null}`,
-		},
 	}
+
+	paymentService := service.NewPaymentPlanService()
 
 	for _, tt := range tests {
 		tt := tt
@@ -45,7 +42,7 @@ func TestAddRoutes(t *testing.T) {
 			t.Parallel()
 
 			r := chi.NewRouter()
-			AddRoutes(r, &log)
+			AddRoutes(r, &log, paymentService)
 
 			srv := httptest.NewServer(r)
 			defer srv.Close()

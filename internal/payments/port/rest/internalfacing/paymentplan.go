@@ -1,54 +1,41 @@
 package internalfacing
 
 import (
+	"context"
+	"fmt"
 	"io"
 	"net/http"
+
+	"golangreferenceapi/internal/payments/service"
 
 	"github.com/goccy/go-json"
 	"github.com/google/uuid"
 	"github.com/monacohq/golang-common/transport/http/handlerwrap"
 )
 
-type PendingPayment struct {
-	ID     string `json:"id"`
-	Output string `json:"output"`
-	Value  string `json:"value"`
-	Meta   struct {
-		Currency          string `json:"currency"`
-		Amount            string `json:"amount"`
-		Recipient         string `json:"recipient"`
-		Items             string `json:"items"`
-		CustomID          string `json:"custom_id"`
-		QuotationID       string `json:"quotation_id"`
-		ValueFiat         string `json:"value_fiat"`
-		MerchantReference string `json:"merchant_reference"`
-		LiveMode          bool   `json:"live_mode"`
-		Status            string `json:"status"`
-		RemainingTime     string `json:"remaining_time"`
-		Deadline          string `json:"deadline"`
-		CryptoCurrency    string `json:"crypto_currency"`
-		IsApproved        bool   `json:"is_approved"`
-		CryptoAmounts     struct {
-			USDC string `json:"USDC"`
-			CRO  string `json:"CRO"`
-		} `json:"crypto_amounts"`
-		PayLaterInstallments []struct {
-			Date     string `json:"date"`
-			Amount   string `json:"amount"`
-			Currency string `json:"currency"`
-		} `json:"pay_later_installments"`
-		PayLaterAmount struct {
-			Amount   string `json:"amount"`
-			Currency string `json:"currency"`
-		} `json:"pay_later_amount"`
-	} `json:"meta"`
-	ResourceType string `json:"resource_type"`
-	ResourceID   string `json:"resource_id"`
+type CreatePendingPaymentPlanRequest struct {
+	PendingPayment struct {
+		ID           string               `json:"id"`
+		Currency     string               `json:"currency"`
+		TotalAmount  string               `json:"total_amount"`
+		Installments []CreateInstallments `json:"installments"`
+	} `json:"payment"`
 }
 
-type CreatePendingPaymentPlanRequest struct {
-	PendingPayment     PendingPayment `json:"payment"`
-	UserWalletCurrency string         `json:"user_wallet_currency"`
+type CreateInstallments struct {
+	ID       string `json:"id"`
+	Amount   string `json:"amount"`
+	Currency string `json:"currency"`
+	DueAt    string `json:"due_at"`
+	Status   string `json:"status"`
+}
+
+type CreatePendingPaymentPlanResponse struct {
+	PendingPayment service.PaymentPlans `json:"payment"`
+}
+
+type ListPaymentPlanResponse struct {
+	Payment service.PaymentPlans `json:"payment"`
 }
 
 // createPendingPaymentPlanHandler creates a pending payment plan
@@ -62,20 +49,21 @@ type CreatePendingPaymentPlanRequest struct {
 // @Success 200
 // @Failure 400 {object} handlerwrap.ErrorResponse "bad reqBody"
 // @Failure 500 {object} handlerwrap.ErrorResponse "internal error"
-func createPendingPaymentPlanHandler(paramsGetter handlerwrap.NamedURLParamsGetter) handlerwrap.TypedHandler {
+func createPendingPaymentPlanHandler(
+	paramsGetter handlerwrap.NamedURLParamsGetter,
+	paymentService service.PaymentPlanService,
+) handlerwrap.TypedHandler {
 	return func(req *http.Request) (*handlerwrap.Response, *handlerwrap.ErrorResponse) {
 		var (
 			userUUID *uuid.UUID
 			request  CreatePendingPaymentPlanRequest
-			err      *handlerwrap.ErrorResponse
+			respErr  *handlerwrap.ErrorResponse
 		)
 
-		userUUID, err = parseUUIDFormatParam(req.Context(), paramsGetter, urlParamUserUUID)
-		if err != nil {
-			return nil, err
+		userUUID, respErr = parseUUIDFormatParam(req.Context(), paramsGetter, urlParamUserUUID)
+		if respErr != nil {
+			return nil, respErr
 		}
-
-		_ = userUUID
 
 		body, readErr := io.ReadAll(req.Body)
 		if readErr != nil {
@@ -86,8 +74,22 @@ func createPendingPaymentPlanHandler(paramsGetter handlerwrap.NamedURLParamsGett
 			return nil, InvalidRequestBodyError{Err: err, Data: string(body)}.ToErrorResponse()
 		}
 
+		createPaymentParams, err := NewCreatePaymentPlanParams(&request)
+		if err != nil {
+			return nil, InvalidRequestBodyError{Err: err, Data: string(body)}.ToErrorResponse()
+		}
+
+		paymentPlan, serviceErr := paymentService.CreatePendingPaymentPlan(req.Context(), *userUUID, createPaymentParams)
+		if serviceErr != nil {
+			return nil, InternalError{Err: serviceErr, Data: string(body)}.ToErrorResponse()
+		}
+
+		resp := CreatePendingPaymentPlanResponse{
+			PendingPayment: *paymentPlan,
+		}
+
 		return &handlerwrap.Response{
-			Body:           nil,
+			Body:           resp,
 			HTTPStatusCode: http.StatusOK,
 		}, nil
 	}
@@ -135,15 +137,54 @@ func cancelPaymentPlanHandler(paramsGetter handlerwrap.NamedURLParamsGetter) han
 // @Failure 403 {object} handlerwrap.ErrorResponse "payment plan is not in pending"
 // @Failure 404 {object} handlerwrap.ErrorResponse "payment plan not found"
 // @Failure 500 {object} handlerwrap.ErrorResponse "internal error"
-func completePaymentPlanHandler(paramsGetter handlerwrap.NamedURLParamsGetter) handlerwrap.TypedHandler {
+func completePaymentPlanHandler(
+	paramsGetter handlerwrap.NamedURLParamsGetter,
+	paymentService service.PaymentPlanService,
+) handlerwrap.TypedHandler {
 	return func(req *http.Request) (*handlerwrap.Response, *handlerwrap.ErrorResponse) {
-		_, err := parsePaymentPlanParam(req.Context(), paramsGetter)
+		var (
+			paymentUUID   *uuid.UUID
+			installmentID *uuid.UUID
+			userUUID      *uuid.UUID
+			respErr       *handlerwrap.ErrorResponse
+		)
+
+		userUUID, respErr = parseUUIDFormatParam(req.Context(), paramsGetter, urlParamUserUUID)
+		if respErr != nil {
+			return nil, respErr
+		}
+
+		paymentUUID, respErr = parseUUIDFormatParam(req.Context(), paramsGetter, urlParamPaymentUUID)
+		if respErr != nil {
+			return nil, respErr
+		}
+
+		installmentID, respErr = parseUUIDFormatParam(req.Context(), paramsGetter, urlParamInstallmentID)
+		if respErr != nil {
+			return nil, respErr
+		}
+
+		err := paymentService.CompletePaymentPlanCreation(context.Background(), *userUUID, *paymentUUID)
 		if err != nil {
-			return nil, err
+			data := fmt.Sprintf("err:invalid params,paymentUUID:%s,installmenetsID:%s", paymentUUID, installmentID)
+
+			return nil, InternalError{Err: err, Data: data}.ToErrorResponse()
+		}
+
+		// optimize me :-(
+		paymentPlan, serviceErr := paymentService.GetPaymentPlanByUserID(req.Context(), *userUUID)
+		if serviceErr != nil {
+			return nil, InternalError{Err: serviceErr, Data: "query paymentPlan error"}.ToErrorResponse()
+		}
+
+		resp := make([]ListPaymentPlanResponse, 0, len(paymentPlan))
+
+		for _, plan := range paymentPlan {
+			resp = append(resp, ListPaymentPlanResponse{Payment: plan})
 		}
 
 		return &handlerwrap.Response{
-			Body:           nil,
+			Body:           resp,
 			HTTPStatusCode: http.StatusOK,
 		}, nil
 	}

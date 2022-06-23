@@ -11,13 +11,14 @@ import (
 	"syscall"
 	"time"
 
-	"golangreferenceapi/internal/configuration"
-	"golangreferenceapi/internal/docs"
-	"golangreferenceapi/internal/port/grpc/bnplapi/creditline/v1"
-	grpcuserfacing "golangreferenceapi/internal/port/grpc/userfacing"
-	"golangreferenceapi/internal/port/rest"
-	"golangreferenceapi/internal/port/rest/internalfacing"
-	"golangreferenceapi/internal/port/rest/userfacing"
+	"golangreferenceapi/internal/payments/configuration"
+	"golangreferenceapi/internal/payments/docs"
+	"golangreferenceapi/internal/payments/port/grpc/bnplapi/creditline/v1"
+	grpcuserfacing "golangreferenceapi/internal/payments/port/grpc/userfacing"
+	"golangreferenceapi/internal/payments/port/rest"
+	"golangreferenceapi/internal/payments/port/rest/internalfacing"
+	"golangreferenceapi/internal/payments/port/rest/userfacing"
+	"golangreferenceapi/internal/payments/service"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -116,9 +117,11 @@ func main() { // nolint: cyclop // temporary, will be moved to multiple funcs
 		),
 	))
 
+	paymentService := service.NewPaymentPlanService()
+
 	httpRouter.Route("/"+version, func(r chi.Router) {
-		userfacing.AddRoutes(r, &log.Logger)
-		internalfacing.AddRoutes(r, &log.Logger, rest.ChiNamedURLParamsGetter)
+		userfacing.AddRoutes(r, &log.Logger, paymentService)
+		internalfacing.AddRoutes(r, &log.Logger, rest.ChiNamedURLParamsGetter, paymentService)
 	})
 
 	// serve router

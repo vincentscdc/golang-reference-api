@@ -1,11 +1,15 @@
 package userfacing
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
 	"testing"
 
+	"golangreferenceapi/internal/payments/service"
+
+	"github.com/google/uuid"
 	"github.com/monacohq/golang-common/transport/http/handlerwrap"
 )
 
@@ -21,6 +25,10 @@ func Test_getPaymentPlansHandler(t *testing.T) {
 		{
 			name:  "happy path",
 			query: "offset=10&limit=10&created_at_order=desc",
+			expectedErrorResponse: &handlerwrap.ErrorResponse{
+				HTTPStatusCode: http.StatusInternalServerError,
+				ErrorCode:      "user_error",
+			},
 			expectedResponse: &handlerwrap.Response{
 				Body:           ([]PaymentPlanResponse)(nil),
 				HTTPStatusCode: http.StatusOK,
@@ -32,17 +40,22 @@ func Test_getPaymentPlansHandler(t *testing.T) {
 			expectedErrorResponse: handlerwrap.ParsingParamError{}.ToErrorResponse(),
 		},
 	}
+
+	paymentService := service.NewPaymentPlanService()
+
 	for _, tt := range tests {
 		tt := tt
 
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			t.Run(tt.name, func(t *testing.T) {
 				t.Parallel()
 
 				req := httptest.NewRequest("GET", "/?"+tt.query, nil)
-				setRequestHeaderUserID(req, "b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5")
+				id, _ := uuid.Parse("b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5")
+				req = req.WithContext(context.WithValue(req.Context(), contextValKeyUserUUID, &id))
 
-				resp, err := listPaymentPlansHandler()(req)
+				resp, err := listPaymentPlansHandler(paymentService)(req)
 				if tt.expectedErrorResponse != nil {
 					if err.ErrorCode != tt.expectedErrorResponse.ErrorCode {
 						t.Errorf("returned a unexpected error code got %v want %v", err.ErrorCode, tt.expectedErrorResponse.ErrorCode)
@@ -58,10 +71,24 @@ func Test_getPaymentPlansHandler(t *testing.T) {
 	}
 }
 
+func Test_getPaymentPlansHandler_MissingUserID(t *testing.T) {
+	t.Parallel()
+
+	paymentService := service.NewPaymentPlanService()
+
+	req := httptest.NewRequest("GET", "/", nil)
+
+	_, err := listPaymentPlansHandler(paymentService)(req)
+	if err != nil && err.HTTPStatusCode != http.StatusBadRequest {
+		t.Errorf("unexpected status code expect: %v, actual: %v", err.ErrorCode, http.StatusBadRequest)
+	}
+}
+
 func Benchmark_getPaymentPlansHandler(b *testing.B) {
 	req := httptest.NewRequest("GET", "/", nil)
 
-	h := listPaymentPlansHandler()
+	paymentService := service.NewPaymentPlanService()
+	h := listPaymentPlansHandler(paymentService)
 
 	b.ResetTimer()
 

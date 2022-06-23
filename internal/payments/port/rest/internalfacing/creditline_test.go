@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"testing"
 
-	"golangreferenceapi/internal/port/rest"
+	"golangreferenceapi/internal/payments/port/rest"
 
 	"github.com/monacohq/golang-common/transport/http/handlerwrap"
 )

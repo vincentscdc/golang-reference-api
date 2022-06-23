@@ -24,3 +24,21 @@ func (err InvalidRequestBodyError) ToErrorResponse() *handlerwrap.ErrorResponse 
 		ErrorMsg:       err.Error(),
 	}
 }
+
+type InternalError struct {
+	Data string
+	Err  error
+}
+
+func (err InternalError) Error() string {
+	return fmt.Sprintf("internal error `%v`: %v", err.Data, err.Err)
+}
+
+func (err InternalError) ToErrorResponse() *handlerwrap.ErrorResponse {
+	return &handlerwrap.ErrorResponse{
+		Error:          err.Err,
+		HTTPStatusCode: http.StatusInternalServerError,
+		ErrorCode:      "internal_error",
+		ErrorMsg:       err.Error(),
+	}
+}
