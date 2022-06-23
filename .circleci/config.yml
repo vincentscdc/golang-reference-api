@@ -166,3 +166,5 @@ workflows:
           filters:
             tags:
               only: /.*/
+          requires:
+            - docker-build-tag-push
