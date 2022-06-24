@@ -14,20 +14,21 @@ import (
 )
 
 type CreatePendingPaymentPlanRequest struct {
-	PendingPayment struct {
-		ID           string               `json:"id"`
-		Currency     string               `json:"currency"`
-		TotalAmount  string               `json:"total_amount"`
-		Installments []CreateInstallments `json:"installments"`
-	} `json:"payment"`
+	PendingPayment CreatePendingPayment `json:"payment"`
 }
 
-type CreateInstallments struct {
+type CreatePendingPayment struct {
+	ID           string              `json:"id"`
+	Currency     string              `json:"currency"`
+	TotalAmount  string              `json:"total_amount"`
+	Installments []CreateInstallment `json:"installments"`
+}
+
+type CreateInstallment struct {
 	ID       string `json:"id"`
 	Amount   string `json:"amount"`
 	Currency string `json:"currency"`
 	DueAt    string `json:"due_at"`
-	Status   string `json:"status"`
 }
 
 type CreatePendingPaymentPlanResponse struct {
