@@ -1,7 +1,17 @@
-## Unreleased (bfe7d19..a9cb2c3)
+## Unreleased (0b82104..0b82104)
+#### Bug Fixes
+- invert ns and svc - (0b82104) - Vincent Serpoul
+
+- - -
+
+## Unreleased (bfe7d19..0c59276)
 #### Bug Fixes
 - change APP_ENVIRONMENT to APP_ENV to match monaco-k8s - (a9cb2c3) - Vincent Serpoul
 - update liveness and readiness initialDelaySeconds to decrease deploy time - (bfe7d19) - Vincent Serpoul
+#### Continuous Integration
+- deploy tag v2022.06.24.1640 to adev - (0c59276) - Vincent Serpoul
+#### Miscellaneous Chores
+- update CHANGELOG.md for v2022.06.24.1632 - (3100868) - Vincent Serpoul
 
 - - -
 
