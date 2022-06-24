@@ -1,6 +1,22 @@
-## Unreleased (220c061..220c061)
+## Unreleased (6aac388..9a617e0)
+#### Bug Fixes
+- wait for image building before deployment (#34) - (07d58cd) - Yepeng Liang
+#### Features
+- Add payment APIs (#19) - (84a06d8) - gaston-chiu
+- Add payment plan repo and implementation (#27) - (6aac388) - jonathanyang-cryptocom
+#### Miscellaneous Chores
+- upgrade deps - (9a617e0) - Vincent Serpoul
+- default collector set to the adev collector - (6cf5148) - Vincent Serpoul
+
+- - -
+
+## Unreleased (220c061..2ed0789)
 #### Bug Fixes
 - endpoint change to 204 (#31) - (220c061) - vincentscdc
+#### Continuous Integration
+- deploy tag v2022.06.22.1647 to adev - (2ed0789) - Vincent Serpoul
+#### Miscellaneous Chores
+- update CHANGELOG.md for v2022.06.22.1551 - (b6abe58) - Vincent Serpoul
 
 - - -
 
