@@ -1,6 +1,17 @@
-## Unreleased (61ef976..61ef976)
+## Unreleased (bfe7d19..a9cb2c3)
+#### Bug Fixes
+- change APP_ENVIRONMENT to APP_ENV to match monaco-k8s - (a9cb2c3) - Vincent Serpoul
+- update liveness and readiness initialDelaySeconds to decrease deploy time - (bfe7d19) - Vincent Serpoul
+
+- - -
+
+## Unreleased (61ef976..7e2a0f1)
 #### Bug Fixes
 - switch to otel collector - (61ef976) - Vincent Serpoul
+#### Continuous Integration
+- deploy tag v2022.06.24.1632 to adev - (7e2a0f1) - Vincent Serpoul
+#### Miscellaneous Chores
+- update CHANGELOG.md for v2022.06.24.1624 - (ee927a9) - Vincent Serpoul
 
 - - -
 
