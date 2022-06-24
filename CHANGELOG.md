@@ -1,10 +1,19 @@
-## Unreleased (6aac388..9a617e0)
+## Unreleased (61ef976..61ef976)
+#### Bug Fixes
+- switch to otel collector - (61ef976) - Vincent Serpoul
+
+- - -
+
+## Unreleased (6aac388..5fa283e)
 #### Bug Fixes
 - wait for image building before deployment (#34) - (07d58cd) - Yepeng Liang
+#### Continuous Integration
+- deploy tag v2022.06.24.1624 to adev - (5fa283e) - Vincent Serpoul
 #### Features
 - Add payment APIs (#19) - (84a06d8) - gaston-chiu
 - Add payment plan repo and implementation (#27) - (6aac388) - jonathanyang-cryptocom
 #### Miscellaneous Chores
+- update CHANGELOG.md for v2022.06.22.1647 - (16773ed) - Vincent Serpoul
 - upgrade deps - (9a617e0) - Vincent Serpoul
 - default collector set to the adev collector - (6cf5148) - Vincent Serpoul
 
