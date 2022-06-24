@@ -51,7 +51,7 @@ func main() { // nolint: cyclop // temporary, will be moved to multiple funcs
 
 	// configuration
 	currEnv := "local"
-	if e := os.Getenv("APP_ENVIRONMENT"); e != "" {
+	if e := os.Getenv("APP_ENV"); e != "" {
 		currEnv = e
 	}
 
