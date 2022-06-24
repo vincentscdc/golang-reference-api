@@ -13,5 +13,5 @@ grpc:
   port: 9000
 observability:
   collector:
-    host: "linkerd-jaeger.collector"
+    host: "otel-collector.opentelemetry-collector"
     port: 4317
