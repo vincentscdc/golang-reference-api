@@ -1,6 +1,18 @@
-## Unreleased (0b82104..0b82104)
+## Unreleased (af42429..cd54beb)
+#### Bug Fixes
+- Add payment message test (#44) - (af42429) - gaston-chiu
+#### Features
+- add linkerd annotation - (cd54beb) - Vincent Serpoul
+
+- - -
+
+## Unreleased (0b82104..586def8)
 #### Bug Fixes
 - invert ns and svc - (0b82104) - Vincent Serpoul
+#### Continuous Integration
+- deploy tag v2022.06.24.1714 to adev - (586def8) - Vincent Serpoul
+#### Miscellaneous Chores
+- update CHANGELOG.md for v2022.06.24.1640 - (ddb584f) - Vincent Serpoul
 
 - - -
 
