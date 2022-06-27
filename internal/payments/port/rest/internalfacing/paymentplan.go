@@ -13,21 +13,7 @@ import (
 )
 
 type CreatePendingPaymentPlanRequest struct {
-	PendingPayment CreatePendingPayment `json:"payment"`
-}
-
-type CreatePendingPayment struct {
-	ID           string              `json:"id"`
-	Currency     string              `json:"currency"`
-	TotalAmount  string              `json:"total_amount"`
-	Installments []CreateInstallment `json:"installments"`
-}
-
-type CreateInstallment struct {
-	ID       string `json:"id"`
-	Amount   string `json:"amount"`
-	Currency string `json:"currency"`
-	DueAt    string `json:"due_at"`
+	PendingPayment service.CreatePaymentPlanParams `json:"payment"`
 }
 
 type CreatePendingPaymentPlanResponse struct {
@@ -69,12 +55,7 @@ func createPendingPaymentPlanHandler(
 			return nil, errResp
 		}
 
-		createPaymentParams, err := NewCreatePaymentPlanParams(&request)
-		if err != nil {
-			return nil, handlerwrap.NewErrorResponse(err, http.StatusBadRequest, "error_read_body", "failed to parse body")
-		}
-
-		paymentPlan, err := paymentService.CreatePendingPaymentPlan(req.Context(), *userUUID, createPaymentParams)
+		paymentPlan, err := paymentService.CreatePendingPaymentPlan(req.Context(), *userUUID, &request.PendingPayment)
 		if err != nil {
 			return nil, rest.ServiceErrorToErrorResp(err)
 		}

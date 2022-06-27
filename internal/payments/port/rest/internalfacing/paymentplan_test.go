@@ -1,4 +1,3 @@
-//nolint:cyclop // ignore for testing
 package internalfacing
 
 import (

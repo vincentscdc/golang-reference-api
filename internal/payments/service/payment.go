@@ -20,16 +20,24 @@ const (
 	PaymentInstallmentStatusDue     = "due"
 )
 
+type UUIDGenerator func() (uuid.UUID, error)
+
 var _ PaymentPlanService = (*PaymentServiceImp)(nil)
 
 type PaymentServiceImp struct {
+	uuidGenerator UUIDGenerator
 	memoryStorage map[uuid.UUID][]PaymentPlans
 }
 
 func NewPaymentPlanService() *PaymentServiceImp {
 	return &PaymentServiceImp{
+		uuidGenerator: uuid.NewRandom,
 		memoryStorage: make(map[uuid.UUID][]PaymentPlans),
 	}
+}
+
+func (p *PaymentServiceImp) SetUUIDGenerator(generator UUIDGenerator) {
+	p.uuidGenerator = generator
 }
 
 func (p *PaymentServiceImp) GetPaymentPlanByUserID(ctx context.Context, userID uuid.UUID) ([]PaymentPlans, error) {
@@ -59,13 +67,13 @@ func (p *PaymentServiceImp) CreatePendingPaymentPlan(
 	})
 
 	for _, inst := range paymentPlan.Installments {
-		installmentID, err := uuid.NewUUID()
+		instID, err := p.uuidGenerator()
 		if err != nil {
 			return nil, ErrGenerateUUID
 		}
 
 		newInst := PaymentPlanInstallment{
-			ID:       installmentID.String(),
+			ID:       instID.String(),
 			Currency: inst.Currency,
 			Amount:   inst.Amount,
 			DueAt:    inst.DueAt.Format(common.TimeFormat),

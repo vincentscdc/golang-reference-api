@@ -13,7 +13,7 @@ import (
 	"github.com/monacohq/golang-common/transport/http/handlerwrap"
 )
 
-func Test_getPaymentPlansHandler(t *testing.T) {
+func Test_listPaymentPlansHandler(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -68,7 +68,7 @@ func Test_getPaymentPlansHandler(t *testing.T) {
 	}
 }
 
-func Test_getPaymentPlansHandler_MissingUserID(t *testing.T) {
+func Test_listPaymentPlansHandler_MissingUserID(t *testing.T) {
 	t.Parallel()
 
 	paymentService := service.NewPaymentPlanService()
@@ -81,7 +81,7 @@ func Test_getPaymentPlansHandler_MissingUserID(t *testing.T) {
 	}
 }
 
-func Benchmark_getPaymentPlansHandler(b *testing.B) {
+func Benchmark_listPaymentPlansHandler(b *testing.B) {
 	req := httptest.NewRequest("GET", "/", nil)
 
 	paymentService := service.NewPaymentPlanService()

@@ -44,7 +44,6 @@ type PaymentPlans struct {
 }
 
 type PaymentPlanInstallmentParams struct {
-	ID       uuid.UUID `json:"id"`
 	Amount   string    `json:"amount"`
 	Currency string    `json:"currency"`
 	DueAt    time.Time `json:"due_at"`
