@@ -15,9 +15,6 @@ type CreditLineResponse struct {
 
 func getCreditLineHandler() handlerwrap.TypedHandler {
 	return func(r *http.Request) (*handlerwrap.Response, *handlerwrap.ErrorResponse) {
-		// user uuid
-		_ = getUserUUID(r.Context())
-
 		info := &CreditLineResponse{
 			TotalAmount:     "1000",
 			AvailableAmount: "1000",

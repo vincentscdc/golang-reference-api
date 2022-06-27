@@ -2,15 +2,9 @@ package service
 
 import (
 	"context"
-	"errors"
 	"time"
 
 	"github.com/google/uuid"
-)
-
-var (
-	ErrRecordNotFound = errors.New("record not fund")
-	ErrGenerateUUID   = errors.New("failed to generate uuid")
 )
 
 type PaymentPlanService interface {

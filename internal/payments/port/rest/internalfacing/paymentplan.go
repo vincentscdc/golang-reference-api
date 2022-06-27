@@ -2,13 +2,12 @@ package internalfacing
 
 import (
 	"context"
-	"fmt"
-	"io"
 	"net/http"
+
+	"golangreferenceapi/internal/payments/port/rest"
 
 	"golangreferenceapi/internal/payments/service"
 
-	"github.com/goccy/go-json"
 	"github.com/google/uuid"
 	"github.com/monacohq/golang-common/transport/http/handlerwrap"
 )
@@ -66,23 +65,18 @@ func createPendingPaymentPlanHandler(
 			return nil, respErr
 		}
 
-		body, readErr := io.ReadAll(req.Body)
-		if readErr != nil {
-			return nil, InvalidRequestBodyError{Err: readErr}.ToErrorResponse()
-		}
-
-		if err := json.Unmarshal(body, &request); err != nil {
-			return nil, InvalidRequestBodyError{Err: err, Data: string(body)}.ToErrorResponse()
+		if errResp := handlerwrap.BindBody(req, &request); errResp != nil {
+			return nil, errResp
 		}
 
 		createPaymentParams, err := NewCreatePaymentPlanParams(&request)
 		if err != nil {
-			return nil, InvalidRequestBodyError{Err: err, Data: string(body)}.ToErrorResponse()
+			return nil, handlerwrap.NewErrorResponse(err, http.StatusBadRequest, "error_read_body", "failed to parse body")
 		}
 
-		paymentPlan, serviceErr := paymentService.CreatePendingPaymentPlan(req.Context(), *userUUID, createPaymentParams)
-		if serviceErr != nil {
-			return nil, InternalError{Err: serviceErr, Data: string(body)}.ToErrorResponse()
+		paymentPlan, err := paymentService.CreatePendingPaymentPlan(req.Context(), *userUUID, createPaymentParams)
+		if err != nil {
+			return nil, rest.ServiceErrorToErrorResp(err)
 		}
 
 		resp := CreatePendingPaymentPlanResponse{
@@ -144,10 +138,9 @@ func completePaymentPlanHandler(
 ) handlerwrap.TypedHandler {
 	return func(req *http.Request) (*handlerwrap.Response, *handlerwrap.ErrorResponse) {
 		var (
-			paymentUUID   *uuid.UUID
-			installmentID *uuid.UUID
-			userUUID      *uuid.UUID
-			respErr       *handlerwrap.ErrorResponse
+			paymentUUID *uuid.UUID
+			userUUID    *uuid.UUID
+			respErr     *handlerwrap.ErrorResponse
 		)
 
 		userUUID, respErr = parseUUIDFormatParam(req.Context(), paramsGetter, urlParamUserUUID)
@@ -160,22 +153,20 @@ func completePaymentPlanHandler(
 			return nil, respErr
 		}
 
-		installmentID, respErr = parseUUIDFormatParam(req.Context(), paramsGetter, urlParamInstallmentID)
+		_, respErr = parseUUIDFormatParam(req.Context(), paramsGetter, urlParamInstallmentID)
 		if respErr != nil {
 			return nil, respErr
 		}
 
 		err := paymentService.CompletePaymentPlanCreation(context.Background(), *userUUID, *paymentUUID)
 		if err != nil {
-			data := fmt.Sprintf("err:invalid params,paymentUUID:%s,installmenetsID:%s", paymentUUID, installmentID)
-
-			return nil, InternalError{Err: err, Data: data}.ToErrorResponse()
+			return nil, rest.ServiceErrorToErrorResp(err)
 		}
 
 		// optimize me :-(
 		paymentPlan, serviceErr := paymentService.GetPaymentPlanByUserID(req.Context(), *userUUID)
 		if serviceErr != nil {
-			return nil, InternalError{Err: serviceErr, Data: "query paymentPlan error"}.ToErrorResponse()
+			return nil, rest.ServiceErrorToErrorResp(err)
 		}
 
 		resp := make([]ListPaymentPlanResponse, 0, len(paymentPlan))
@@ -214,13 +205,9 @@ func refundHandler() handlerwrap.TypedHandler {
 	return func(req *http.Request) (*handlerwrap.Response, *handlerwrap.ErrorResponse) {
 		var request RefundRequest
 
-		body, readErr := io.ReadAll(req.Body)
-		if readErr != nil {
-			return nil, InvalidRequestBodyError{Err: readErr}.ToErrorResponse()
-		}
-
-		if err := json.Unmarshal(body, &request); err != nil {
-			return nil, InvalidRequestBodyError{Err: err, Data: string(body)}.ToErrorResponse()
+		err := handlerwrap.BindBody(req, &request)
+		if err != nil {
+			return nil, err
 		}
 
 		return &handlerwrap.Response{

@@ -23,12 +23,9 @@ func Test_getPaymentPlansHandler(t *testing.T) {
 		expectedErrorResponse *handlerwrap.ErrorResponse
 	}{
 		{
-			name:  "happy path",
-			query: "offset=10&limit=10&created_at_order=desc",
-			expectedErrorResponse: &handlerwrap.ErrorResponse{
-				HTTPStatusCode: http.StatusInternalServerError,
-				ErrorCode:      "user_error",
-			},
+			name:                  "happy path",
+			query:                 "offset=10&limit=10&created_at_order=desc",
+			expectedErrorResponse: &handlerwrap.ErrorResponse{HTTPStatusCode: http.StatusNotFound},
 			expectedResponse: &handlerwrap.Response{
 				Body:           ([]PaymentPlanResponse)(nil),
 				HTTPStatusCode: http.StatusOK,
@@ -57,8 +54,8 @@ func Test_getPaymentPlansHandler(t *testing.T) {
 
 				resp, err := listPaymentPlansHandler(paymentService)(req)
 				if tt.expectedErrorResponse != nil {
-					if err.ErrorCode != tt.expectedErrorResponse.ErrorCode {
-						t.Errorf("returned a unexpected error code got %v want %v", err.ErrorCode, tt.expectedErrorResponse.ErrorCode)
+					if err.HTTPStatusCode != tt.expectedErrorResponse.HTTPStatusCode {
+						t.Errorf("returned a unexpected error code got %v want %v", err.HTTPStatusCode, tt.expectedErrorResponse.HTTPStatusCode)
 					}
 
 					return
@@ -79,7 +76,7 @@ func Test_getPaymentPlansHandler_MissingUserID(t *testing.T) {
 	req := httptest.NewRequest("GET", "/", nil)
 
 	_, err := listPaymentPlansHandler(paymentService)(req)
-	if err != nil && err.HTTPStatusCode != http.StatusBadRequest {
+	if err != nil && err.HTTPStatusCode != http.StatusUnauthorized {
 		t.Errorf("unexpected status code expect: %v, actual: %v", err.ErrorCode, http.StatusBadRequest)
 	}
 }

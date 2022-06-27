@@ -51,7 +51,7 @@ func Test_createPendingPaymentPlanHandlerError(t *testing.T) {
 				}),
 				paramsGetter: rest.ChiNamedURLParamsGetter,
 			},
-			wantErrorResponse: InvalidRequestBodyError{}.ToErrorResponse(),
+			wantErrorResponse: &handlerwrap.ErrorResponse{HTTPStatusCode: http.StatusBadRequest},
 		},
 		{
 			name: "returns 400 if passing a invalid body",
@@ -60,7 +60,7 @@ func Test_createPendingPaymentPlanHandlerError(t *testing.T) {
 				reqBody:      strings.NewReader(`{x}`),
 				paramsGetter: rest.ChiNamedURLParamsGetter,
 			},
-			wantErrorResponse: InvalidRequestBodyError{}.ToErrorResponse(),
+			wantErrorResponse: &handlerwrap.ErrorResponse{HTTPStatusCode: http.StatusBadRequest},
 		},
 	}
 
@@ -79,10 +79,6 @@ func Test_createPendingPaymentPlanHandlerError(t *testing.T) {
 			if errRsp != nil {
 				if errRsp.HTTPStatusCode != tt.wantErrorResponse.HTTPStatusCode {
 					t.Errorf("returned unexpected HTTP status code: got %v want %v", errRsp.HTTPStatusCode, tt.wantErrorResponse.HTTPStatusCode)
-				}
-
-				if errRsp.ErrorCode != tt.wantErrorResponse.ErrorCode {
-					t.Errorf("returned unexpected error code: got %v want %v", errRsp.ErrorCode, tt.wantErrorResponse.ErrorCode)
 				}
 
 				return
@@ -346,7 +342,7 @@ func Test_completePaymentPlanHandler(t *testing.T) {
 				paymentPlanUUID: "b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5",
 				paramsGetter:    rest.ChiNamedURLParamsGetter,
 			},
-			wantErrorResponse: handlerwrap.InternalServerError{}.ToErrorResponse(),
+			wantErrorResponse: &handlerwrap.ErrorResponse{HTTPStatusCode: http.StatusNotFound},
 		},
 		{
 			name: "returns 400 if passing a invalid param user_uuid",
@@ -354,10 +350,7 @@ func Test_completePaymentPlanHandler(t *testing.T) {
 				userUUID:     "x",
 				paramsGetter: rest.ChiNamedURLParamsGetter,
 			},
-			wantErrorResponse: handlerwrap.ParsingParamError{
-				Name:  urlParamUserUUID,
-				Value: "x",
-			}.ToErrorResponse(),
+			wantErrorResponse: &handlerwrap.ErrorResponse{HTTPStatusCode: http.StatusBadRequest},
 		},
 		{
 			name: "returns 400 if passing a invalid param uuid",
@@ -366,10 +359,7 @@ func Test_completePaymentPlanHandler(t *testing.T) {
 				paymentPlanUUID: "x",
 				paramsGetter:    rest.ChiNamedURLParamsGetter,
 			},
-			wantErrorResponse: handlerwrap.ParsingParamError{
-				Name:  urlParamUserUUID,
-				Value: "x",
-			}.ToErrorResponse(),
+			wantErrorResponse: &handlerwrap.ErrorResponse{HTTPStatusCode: http.StatusBadRequest},
 		},
 	}
 	paymentService := service.NewPaymentPlanService()
@@ -393,11 +383,6 @@ func Test_completePaymentPlanHandler(t *testing.T) {
 				if errRsp.HTTPStatusCode != tt.wantErrorResponse.HTTPStatusCode {
 					t.Errorf("returned unexpected HTTP status code: got %v want %v",
 						errRsp.HTTPStatusCode, tt.wantErrorResponse.HTTPStatusCode)
-				}
-
-				if errRsp.ErrorCode != tt.wantErrorResponse.ErrorCode {
-					t.Errorf("returned unexpected error code: got %v want %v",
-						errRsp.ErrorCode, tt.wantErrorResponse.ErrorCode)
 				}
 
 				return
@@ -456,7 +441,7 @@ func Test_refundHandler(t *testing.T) {
 					return 0, errors.New("failed")
 				}),
 			},
-			wantErrorResponse: InvalidRequestBodyError{}.ToErrorResponse(),
+			wantErrorResponse: &handlerwrap.ErrorResponse{HTTPStatusCode: http.StatusBadRequest},
 		},
 
 		{
@@ -464,7 +449,7 @@ func Test_refundHandler(t *testing.T) {
 			args: args{
 				reqBody: strings.NewReader(`{x}`),
 			},
-			wantErrorResponse: InvalidRequestBodyError{}.ToErrorResponse(),
+			wantErrorResponse: &handlerwrap.ErrorResponse{HTTPStatusCode: http.StatusBadRequest},
 		},
 	}
 
@@ -480,10 +465,6 @@ func Test_refundHandler(t *testing.T) {
 			if tt.wantErrorResponse != nil {
 				if errRsp.HTTPStatusCode != tt.wantErrorResponse.HTTPStatusCode {
 					t.Errorf("returned unexpected HTTP status code: got %v want %v", errRsp.HTTPStatusCode, tt.wantErrorResponse.HTTPStatusCode)
-				}
-
-				if errRsp.ErrorCode != tt.wantErrorResponse.ErrorCode {
-					t.Errorf("returned unexpected error code: got %v want %v", errRsp.ErrorCode, tt.wantErrorResponse.ErrorCode)
 				}
 
 				return

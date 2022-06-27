@@ -2,7 +2,10 @@ package userfacing
 
 import (
 	"context"
+	"errors"
 	"net/http"
+
+	"github.com/monacohq/golang-common/transport/http/handlerwrap"
 
 	"github.com/google/uuid"
 	"github.com/rs/zerolog"
@@ -11,6 +14,8 @@ import (
 const (
 	HTTPHeaderKeyUserUUID = "X-CRYPTO-USER-UUID"
 )
+
+var ErrUserIDNotFound = errors.New("user id not found")
 
 // UserUUID a middleware to get the user uuid from HTTP header.
 // set it into ctx otherwise abort with a 401 HTTP status code
@@ -45,11 +50,12 @@ func setUserUUID(ctx context.Context, userUUID *uuid.UUID) context.Context {
 	return context.WithValue(ctx, contextValKeyUserUUID, userUUID)
 }
 
-func getUserUUID(ctx context.Context) *uuid.UUID {
+func getUserUUID(ctx context.Context) (*uuid.UUID, *handlerwrap.ErrorResponse) {
 	userUUID, ok := ctx.Value(contextValKeyUserUUID).(*uuid.UUID)
 	if ok {
-		return userUUID
+		return userUUID, nil
 	}
 
-	return nil
+	return nil,
+		handlerwrap.NewErrorResponse(ErrUserIDNotFound, http.StatusUnauthorized, "", "user id not found")
 }

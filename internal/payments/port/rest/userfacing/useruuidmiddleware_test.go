@@ -21,7 +21,11 @@ func Test_UserUUID(t *testing.T) {
 
 	echoHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		if _, err := w.Write([]byte(getUserUUID(r.Context()).String())); err != nil {
+		userID, err := getUserUUID(r.Context())
+		if err != nil {
+			t.Fatalf("failed to get user uuid %v", err.Error)
+		}
+		if _, err := w.Write([]byte(userID.String())); err != nil {
 			t.Fatalf("unexpected write into response error: %v", err)
 		}
 	})
