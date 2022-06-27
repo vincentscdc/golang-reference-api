@@ -8,6 +8,7 @@ metadata:
     app.kubernetes.io/instance: api
   annotations:
     app-containers: api
+    linkerd.io/inject: enabled
 spec:
   selector:
     matchLabels:
