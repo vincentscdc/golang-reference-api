@@ -1,8 +1,18 @@
-## Unreleased (af42429..cd54beb)
+## Unreleased (9aff9ee..9aff9ee)
+#### Bug Fixes
+- linkerd injection - (9aff9ee) - Vincent Serpoul
+
+- - -
+
+## Unreleased (af42429..38c3731)
 #### Bug Fixes
 - Add payment message test (#44) - (af42429) - gaston-chiu
+#### Continuous Integration
+- deploy tag v2022.06.27.1033 to adev - (38c3731) - Vincent Serpoul
 #### Features
 - add linkerd annotation - (cd54beb) - Vincent Serpoul
+#### Miscellaneous Chores
+- update CHANGELOG.md for v2022.06.24.1714 - (3033904) - Vincent Serpoul
 
 - - -
 
