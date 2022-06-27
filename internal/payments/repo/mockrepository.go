@@ -6,9 +6,8 @@ package repo
 
 import (
 	context "context"
-	reflect "reflect"
-
 	payments "golangreferenceapi/internal/payments"
+	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
 )
@@ -36,6 +35,21 @@ func (m *MockRepository) EXPECT() *MockRepositoryMockRecorder {
 	return m.recorder
 }
 
+// CreatePaymentInstallment mocks base method.
+func (m *MockRepository) CreatePaymentInstallment(ctx context.Context, arg *payments.CreateInstallmentParams) (*payments.Installment, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreatePaymentInstallment", ctx, arg)
+	ret0, _ := ret[0].(*payments.Installment)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreatePaymentInstallment indicates an expected call of CreatePaymentInstallment.
+func (mr *MockRepositoryMockRecorder) CreatePaymentInstallment(ctx, arg interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreatePaymentInstallment", reflect.TypeOf((*MockRepository)(nil).CreatePaymentInstallment), ctx, arg)
+}
+
 // CreatePaymentPlan mocks base method.
 func (m *MockRepository) CreatePaymentPlan(ctx context.Context, arg *payments.CreatePlanParams) (*payments.Plan, error) {
 	m.ctrl.T.Helper()
@@ -49,6 +63,21 @@ func (m *MockRepository) CreatePaymentPlan(ctx context.Context, arg *payments.Cr
 func (mr *MockRepositoryMockRecorder) CreatePaymentPlan(ctx, arg interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreatePaymentPlan", reflect.TypeOf((*MockRepository)(nil).CreatePaymentPlan), ctx, arg)
+}
+
+// ListPaymentInstallmentsByPlanID mocks base method.
+func (m *MockRepository) ListPaymentInstallmentsByPlanID(ctx context.Context, planID string) ([]*payments.Installment, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListPaymentInstallmentsByPlanID", ctx, planID)
+	ret0, _ := ret[0].([]*payments.Installment)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListPaymentInstallmentsByPlanID indicates an expected call of ListPaymentInstallmentsByPlanID.
+func (mr *MockRepositoryMockRecorder) ListPaymentInstallmentsByPlanID(ctx, planID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListPaymentInstallmentsByPlanID", reflect.TypeOf((*MockRepository)(nil).ListPaymentInstallmentsByPlanID), ctx, planID)
 }
 
 // ListPaymentPlansByUserID mocks base method.

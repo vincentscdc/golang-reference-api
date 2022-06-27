@@ -20,6 +20,6 @@ type Plan struct {
 type CreatePlanParams struct {
 	UserID   uuid.UUID
 	Currency string
-	Amount   string
+	Amount   decimal.Decimal
 	Status   string
 }

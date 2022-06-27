@@ -7,7 +7,6 @@ import (
 	"golangreferenceapi/internal/payments"
 
 	"github.com/google/uuid"
-	"github.com/shopspring/decimal"
 )
 
 type SQLCRepo struct {
@@ -19,16 +18,11 @@ func NewSQLCRepository(querier db.Querier) *SQLCRepo {
 }
 
 func (impl *SQLCRepo) CreatePaymentPlan(ctx context.Context, arg *payments.CreatePlanParams) (*payments.Plan, error) {
-	amt, err := decimal.NewFromString(arg.Amount)
-	if err != nil {
-		return nil, decimalParseError{value: arg.Amount, WrappedErr: err}
-	}
-
 	dbEntity, err := impl.querier.CreatePaymentPlan(ctx, &db.CreatePaymentPlanParams{
 		ID:       uuid.New(),
 		UserID:   arg.UserID,
 		Currency: db.Currency(arg.Currency),
-		Amount:   amt,
+		Amount:   arg.Amount,
 		Status:   db.PaymentStatus(arg.Status),
 	})
 	if err != nil {
@@ -43,13 +37,8 @@ func (impl *SQLCRepo) CreatePaymentPlan(ctx context.Context, arg *payments.Creat
 	return plan, nil
 }
 
-func (impl *SQLCRepo) ListPaymentPlansByUserID(ctx context.Context, userID string) ([]*payments.Plan, error) {
-	userUUID, err := uuid.Parse(userID)
-	if err != nil {
-		return nil, uuidParseError{value: userID, WrappedErr: err}
-	}
-
-	entities, err := impl.querier.ListPaymentPlansByUserID(ctx, userUUID)
+func (impl *SQLCRepo) ListPaymentPlansByUserID(ctx context.Context, userID uuid.UUID) ([]*payments.Plan, error) {
+	entities, err := impl.querier.ListPaymentPlansByUserID(ctx, userID)
 	if err != nil {
 		return nil, pgxDBQueryRunError{WrappedErr: err}
 	}
@@ -66,6 +55,53 @@ func (impl *SQLCRepo) ListPaymentPlansByUserID(ctx context.Context, userID strin
 	}
 
 	return plans, nil
+}
+
+func (impl *SQLCRepo) CreatePaymentInstallment(
+	ctx context.Context,
+	arg *payments.CreateInstallmentParams,
+) (*payments.Installment, error) {
+	dbEntity, err := impl.querier.CreatePaymentInstallments(ctx, &db.CreatePaymentInstallmentsParams{
+		ID:            uuid.New(),
+		PaymentPlanID: arg.PaymentPlanID,
+		Currency:      db.Currency(arg.Currency),
+		Amount:        arg.Amount,
+		DueAt:         arg.DueAt,
+		Status:        db.PaymentInstallmentStatus(arg.Status),
+	})
+	if err != nil {
+		return nil, pgxDBQueryRunError{WrappedErr: err}
+	}
+
+	installment, err := impl.newInstallmentFromDBEntity(dbEntity)
+	if err != nil {
+		return nil, err
+	}
+
+	return installment, nil
+}
+
+func (impl *SQLCRepo) ListPaymentInstallmentsByPlanID(
+	ctx context.Context,
+	planID uuid.UUID,
+) ([]*payments.Installment, error) {
+	entities, err := impl.querier.ListPaymentInstallmentsByPlanID(ctx, planID)
+	if err != nil {
+		return nil, pgxDBQueryRunError{WrappedErr: err}
+	}
+
+	installments := make([]*payments.Installment, len(entities))
+
+	for idx, entity := range entities {
+		plan, err := impl.newInstallmentFromDBEntity(entity)
+		if err != nil {
+			return nil, err
+		}
+
+		installments[idx] = plan
+	}
+
+	return installments, nil
 }
 
 func (impl *SQLCRepo) newPlanFromDBEntity(entity interface{}) (*payments.Plan, error) {
@@ -105,6 +141,52 @@ func (impl *SQLCRepo) newPlanFromDBEntity(entity interface{}) (*payments.Plan, e
 			Status:    string(planEntity.Status),
 			CreatedAt: planEntity.CreatedAt,
 			UpdatedAt: planEntity.UpdatedAt,
+		}, nil
+	}
+
+	return nil, unsupportedDBEntityError{}
+}
+
+func (impl *SQLCRepo) newInstallmentFromDBEntity(entity interface{}) (*payments.Installment, error) {
+	createInstRowEntity, valid := entity.(*db.CreatePaymentInstallmentsRow)
+	if valid {
+		return &payments.Installment{
+			ID:            createInstRowEntity.ID,
+			PaymentPlanID: createInstRowEntity.PaymentPlanID,
+			Currency:      string(createInstRowEntity.Currency),
+			Amount:        createInstRowEntity.Amount,
+			DueAt:         createInstRowEntity.DueAt,
+			Status:        string(createInstRowEntity.Status),
+			CreatedAt:     createInstRowEntity.CreatedAt,
+			UpdatedAt:     createInstRowEntity.UpdatedAt,
+		}, nil
+	}
+
+	listInstsByUserIDRowEntity, valid := entity.(*db.ListPaymentInstallmentsByPlanIDRow)
+	if valid {
+		return &payments.Installment{
+			ID:            listInstsByUserIDRowEntity.ID,
+			PaymentPlanID: listInstsByUserIDRowEntity.PaymentPlanID,
+			Currency:      string(listInstsByUserIDRowEntity.Currency),
+			Amount:        listInstsByUserIDRowEntity.Amount,
+			DueAt:         listInstsByUserIDRowEntity.DueAt,
+			Status:        string(listInstsByUserIDRowEntity.Status),
+			CreatedAt:     listInstsByUserIDRowEntity.CreatedAt,
+			UpdatedAt:     listInstsByUserIDRowEntity.UpdatedAt,
+		}, nil
+	}
+
+	instEntity, valid := entity.(*db.PaymentInstallment)
+	if valid {
+		return &payments.Installment{
+			ID:            instEntity.ID,
+			PaymentPlanID: instEntity.PaymentPlanID,
+			Currency:      string(instEntity.Currency),
+			Amount:        instEntity.Amount,
+			DueAt:         instEntity.DueAt,
+			Status:        string(instEntity.Status),
+			CreatedAt:     instEntity.CreatedAt,
+			UpdatedAt:     instEntity.UpdatedAt,
 		}, nil
 	}
 

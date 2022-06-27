@@ -5,6 +5,6 @@ INSERT INTO payment_installments (id, payment_plan_id, currency, amount, due_at,
 RETURNING id, payment_plan_id, currency, amount, due_at, status, created_at, updated_at;
 
 -- name: ListPaymentInstallmentsByPlanID :many
-SELECT * FROM payment_installments
+SELECT id, payment_plan_id, currency, amount, due_at, status, created_at, updated_at FROM payment_installments
 WHERE payment_plan_id = $1
 ORDER BY due_at;

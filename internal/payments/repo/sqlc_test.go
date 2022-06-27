@@ -16,9 +16,7 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-// type anything struct{}
-
-func TestNewPGXRepository(t *testing.T) {
+func TestNewSQLCRepository(t *testing.T) {
 	t.Parallel()
 
 	querier := db.New(&pgx.Conn{})
@@ -29,7 +27,7 @@ func TestNewPGXRepository(t *testing.T) {
 	}
 }
 
-func TestPGXRepo_CreatePaymentPlan(t *testing.T) {
+func TestSQLCRepo_CreatePaymentPlan(t *testing.T) {
 	t.Parallel()
 
 	ctrl := gomock.NewController(t)
@@ -64,29 +62,18 @@ func TestPGXRepo_CreatePaymentPlan(t *testing.T) {
 			paramArg: &payments.CreatePlanParams{
 				UserID:   uuid.UUID{},
 				Currency: "usdc",
-				Amount:   "10.98",
+				Amount:   amount,
 				Status:   "pending",
 			},
 			mockedQuerier:   makeMockQuerier(createPaymentPlanDBEntity, nil),
 			expectedErrType: reflect.TypeOf(nil),
 		},
 		{
-			testName: "error - parse string to decimal failed",
-			paramArg: &payments.CreatePlanParams{
-				UserID:   uuid.UUID{},
-				Currency: "usdc",
-				Amount:   "tendotninty8",
-				Status:   "pending",
-			},
-			mockedQuerier:   makeMockQuerier(createPaymentPlanDBEntity, nil),
-			expectedErrType: reflect.TypeOf(decimalParseError{}),
-		},
-		{
 			testName: "error - CreatePaymentPlan failed",
 			paramArg: &payments.CreatePlanParams{
 				UserID:   uuid.UUID{},
 				Currency: "usdc",
-				Amount:   "10.98",
+				Amount:   amount,
 				Status:   "pending",
 			},
 			mockedQuerier:   makeMockQuerier(nil, errors.New("some db err")),
@@ -110,7 +97,7 @@ func TestPGXRepo_CreatePaymentPlan(t *testing.T) {
 	}
 }
 
-func TestPGXRepo_ListPaymentPlansByUserID(t *testing.T) {
+func TestSQLCRepo_ListPaymentPlansByUserID(t *testing.T) {
 	t.Parallel()
 
 	ctrl := gomock.NewController(t)
@@ -139,25 +126,19 @@ func TestPGXRepo_ListPaymentPlansByUserID(t *testing.T) {
 
 	testcases := []struct {
 		testName        string
-		paramUserID     string
+		paramUserID     uuid.UUID
 		mockedQuerier   db.Querier
 		expectedErrType reflect.Type
 	}{
 		{
 			testName:        "happy",
-			paramUserID:     userUUID.String(),
+			paramUserID:     userUUID,
 			mockedQuerier:   makeMockQuerier(paymentPlanDBEntities, nil),
 			expectedErrType: reflect.TypeOf(nil),
 		},
 		{
-			testName:        "error - UUID parse failed",
-			paramUserID:     "userUUID1",
-			mockedQuerier:   makeMockQuerier(paymentPlanDBEntities, nil),
-			expectedErrType: reflect.TypeOf(uuidParseError{}),
-		},
-		{
 			testName:        "error - ListPaymentPlansByUserID failed",
-			paramUserID:     userUUID.String(),
+			paramUserID:     userUUID,
 			mockedQuerier:   makeMockQuerier(nil, errors.New("some db err")),
 			expectedErrType: reflect.TypeOf(pgxDBQueryRunError{}),
 		},
@@ -179,7 +160,144 @@ func TestPGXRepo_ListPaymentPlansByUserID(t *testing.T) {
 	}
 }
 
-func TestPGXRepo_newPlanFromDBEntity(t *testing.T) {
+func TestSQLCRepo_CreatePaymentInstallment(t *testing.T) {
+	t.Parallel()
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	amount, _ := decimal.NewFromString("10.98")
+	createPaymentInstallmentDBEntity := &db.CreatePaymentInstallmentsRow{
+		ID:            uuid.UUID{},
+		PaymentPlanID: uuid.UUID{},
+		Currency:      "usdc",
+		Amount:        amount,
+		DueAt:         time.Time{},
+		Status:        "pending",
+		CreatedAt:     time.Time{},
+		UpdatedAt:     time.Time{},
+	}
+
+	makeMockQuerier := func(result *db.CreatePaymentInstallmentsRow, err error) db.Querier {
+		mockedQuerier := db.NewMockQuerier(ctrl)
+		mockedQuerier.EXPECT().CreatePaymentInstallments(gomock.Any(), gomock.Any()).Return(result, err).AnyTimes()
+
+		return mockedQuerier
+	}
+
+	testcases := []struct {
+		testName        string
+		paramArg        *payments.CreateInstallmentParams
+		mockedQuerier   db.Querier
+		expectedErrType reflect.Type
+	}{
+		{
+			testName: "happy",
+			paramArg: &payments.CreateInstallmentParams{
+				PaymentPlanID: uuid.UUID{},
+				Currency:      "usdc",
+				Amount:        amount,
+				DueAt:         time.Time{},
+				Status:        "pending",
+			},
+			mockedQuerier:   makeMockQuerier(createPaymentInstallmentDBEntity, nil),
+			expectedErrType: reflect.TypeOf(nil),
+		},
+		{
+			testName: "error - CreatePaymentInstallments failed",
+			paramArg: &payments.CreateInstallmentParams{
+				PaymentPlanID: uuid.UUID{},
+				Currency:      "usdc",
+				Amount:        amount,
+				DueAt:         time.Time{},
+				Status:        "pending",
+			},
+			mockedQuerier:   makeMockQuerier(nil, errors.New("some err")),
+			expectedErrType: reflect.TypeOf(pgxDBQueryRunError{}),
+		},
+	}
+
+	for _, testcase := range testcases {
+		testcase := testcase
+
+		t.Run(testcase.testName, func(t *testing.T) {
+			t.Parallel()
+
+			repo := NewSQLCRepository(testcase.mockedQuerier)
+			_, err := repo.CreatePaymentInstallment(context.Background(), testcase.paramArg)
+			errType := reflect.TypeOf(err)
+			if errType != testcase.expectedErrType {
+				t.Errorf("expects err type %v but %v returned", testcase.expectedErrType.Name(), errType.Name())
+			}
+		})
+	}
+}
+
+func TestSQLCRepo_ListPaymentInstallmentsByPlanID(t *testing.T) {
+	t.Parallel()
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	amount, _ := decimal.NewFromString("10.98")
+	paymentInstallmentsDBEntities := []*db.ListPaymentInstallmentsByPlanIDRow{
+		{
+			ID:            uuid.UUID{},
+			PaymentPlanID: uuid.UUID{},
+			Currency:      "usdc",
+			Amount:        amount,
+			DueAt:         time.Time{},
+			Status:        "pending",
+			CreatedAt:     time.Time{},
+			UpdatedAt:     time.Time{},
+		},
+	}
+
+	userUUID := uuid.New()
+	makeMockQuerier := func(result []*db.ListPaymentInstallmentsByPlanIDRow, err error) db.Querier {
+		mockedQuerier := db.NewMockQuerier(ctrl)
+		mockedQuerier.EXPECT().ListPaymentInstallmentsByPlanID(gomock.Any(), gomock.Any()).Return(result, err).AnyTimes()
+
+		return mockedQuerier
+	}
+
+	testcases := []struct {
+		testName        string
+		paramPlanID     uuid.UUID
+		mockedQuerier   db.Querier
+		expectedErrType reflect.Type
+	}{
+		{
+			testName:        "happy",
+			paramPlanID:     userUUID,
+			mockedQuerier:   makeMockQuerier(paymentInstallmentsDBEntities, nil),
+			expectedErrType: reflect.TypeOf(nil),
+		},
+		{
+			testName:        "error - ListPaymentInstallmentsByPlanID failed",
+			paramPlanID:     userUUID,
+			mockedQuerier:   makeMockQuerier(nil, errors.New("some db err")),
+			expectedErrType: reflect.TypeOf(pgxDBQueryRunError{}),
+		},
+	}
+
+	for _, testcase := range testcases {
+		testcase := testcase
+
+		t.Run(testcase.testName, func(t *testing.T) {
+			t.Parallel()
+
+			repo := NewSQLCRepository(testcase.mockedQuerier)
+			_, err := repo.ListPaymentInstallmentsByPlanID(context.Background(), testcase.paramPlanID)
+			errType := reflect.TypeOf(err)
+			if errType != testcase.expectedErrType {
+				t.Errorf("expects err type %v but %v returned", testcase.expectedErrType.Name(), errType.Name())
+			}
+		})
+	}
+}
+
+func TestSQLCRepo_newPlanFromDBEntity(t *testing.T) {
 	t.Parallel()
 
 	querier := db.New(&pgx.Conn{})
@@ -228,6 +346,60 @@ func TestPGXRepo_newPlanFromDBEntity(t *testing.T) {
 				}
 			} else {
 				if reflect.TypeOf(plan) != reflect.TypeOf(&payments.Plan{}) {
+					t.Errorf("returned entity is not of *payments.Plan")
+				}
+			}
+		})
+	}
+}
+
+func TestSQLCRepo_newInstallmentFromDBEntity(t *testing.T) {
+	t.Parallel()
+
+	querier := db.New(&pgx.Conn{})
+	repo := NewSQLCRepository(querier)
+
+	testcases := []struct {
+		testName      string
+		paramDBEntity interface{}
+		expectErr     bool
+	}{
+		{
+			testName:      "happy - CreatePaymentInstallmentsRow",
+			paramDBEntity: &db.CreatePaymentInstallmentsRow{},
+			expectErr:     false,
+		},
+		{
+			testName:      "happy - ListPaymentInstallmentsByPlanIDRow",
+			paramDBEntity: &db.ListPaymentInstallmentsByPlanIDRow{},
+			expectErr:     false,
+		},
+		{
+			testName:      "happy - PaymentInstallment",
+			paramDBEntity: &db.PaymentInstallment{},
+			expectErr:     false,
+		},
+		{
+			testName:      "failed - json err",
+			paramDBEntity: "some invalid input",
+			expectErr:     true,
+		},
+	}
+
+	for _, testcase := range testcases {
+		testcase := testcase
+
+		t.Run(testcase.testName, func(t *testing.T) {
+			t.Parallel()
+
+			plan, err := repo.newInstallmentFromDBEntity(testcase.paramDBEntity)
+
+			if testcase.expectErr {
+				if err == nil {
+					t.Errorf("expected err but nil returned")
+				}
+			} else {
+				if reflect.TypeOf(plan) != reflect.TypeOf(&payments.Installment{}) {
 					t.Errorf("returned entity is not of *payments.Plan")
 				}
 			}

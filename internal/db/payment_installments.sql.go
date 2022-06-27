@@ -64,29 +64,40 @@ func (q *Queries) CreatePaymentInstallments(ctx context.Context, arg *CreatePaym
 }
 
 const ListPaymentInstallmentsByPlanID = `-- name: ListPaymentInstallmentsByPlanID :many
-SELECT id, created_at, updated_at, currency, amount, due_at, status, payment_plan_id FROM payment_installments
+SELECT id, payment_plan_id, currency, amount, due_at, status, created_at, updated_at FROM payment_installments
 WHERE payment_plan_id = $1
 ORDER BY due_at
 `
 
-func (q *Queries) ListPaymentInstallmentsByPlanID(ctx context.Context, paymentPlanID uuid.UUID) ([]*PaymentInstallment, error) {
+type ListPaymentInstallmentsByPlanIDRow struct {
+	ID            uuid.UUID
+	PaymentPlanID uuid.UUID
+	Currency      Currency
+	Amount        decimal.Decimal
+	DueAt         time.Time
+	Status        PaymentInstallmentStatus
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
+}
+
+func (q *Queries) ListPaymentInstallmentsByPlanID(ctx context.Context, paymentPlanID uuid.UUID) ([]*ListPaymentInstallmentsByPlanIDRow, error) {
 	rows, err := q.db.Query(ctx, ListPaymentInstallmentsByPlanID, paymentPlanID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []*PaymentInstallment
+	var items []*ListPaymentInstallmentsByPlanIDRow
 	for rows.Next() {
-		var i PaymentInstallment
+		var i ListPaymentInstallmentsByPlanIDRow
 		if err := rows.Scan(
 			&i.ID,
-			&i.CreatedAt,
-			&i.UpdatedAt,
+			&i.PaymentPlanID,
 			&i.Currency,
 			&i.Amount,
 			&i.DueAt,
 			&i.Status,
-			&i.PaymentPlanID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
 		); err != nil {
 			return nil, err
 		}

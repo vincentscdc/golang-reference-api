@@ -202,7 +202,7 @@ sql-gen-sqlboiler:
 	)
 
 sqlc:
-	sqlc generate -f ./database/sqlc.yaml
+	sqlc generate -f ./database/sqlc.yaml && mockgen -source=./internal/db/querier.go -destination=./internal/db/mockquerier.go -package=db
 
 ###########
 # swagger #

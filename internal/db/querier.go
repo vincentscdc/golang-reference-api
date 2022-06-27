@@ -13,7 +13,7 @@ import (
 type Querier interface {
 	CreatePaymentInstallments(ctx context.Context, arg *CreatePaymentInstallmentsParams) (*CreatePaymentInstallmentsRow, error)
 	CreatePaymentPlan(ctx context.Context, arg *CreatePaymentPlanParams) (*CreatePaymentPlanRow, error)
-	ListPaymentInstallmentsByPlanID(ctx context.Context, paymentPlanID uuid.UUID) ([]*PaymentInstallment, error)
+	ListPaymentInstallmentsByPlanID(ctx context.Context, paymentPlanID uuid.UUID) ([]*ListPaymentInstallmentsByPlanIDRow, error)
 	ListPaymentPlansByUserID(ctx context.Context, userID uuid.UUID) ([]*ListPaymentPlansByUserIDRow, error)
 }
 
