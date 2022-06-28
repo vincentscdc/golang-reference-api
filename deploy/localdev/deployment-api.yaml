@@ -11,7 +11,7 @@ spec:
           imagePullPolicy: IfNotPresent
           image: golang-reference-api:latest
           env:
-            - name: APP_ENVIRONMENT
+            - name: APP_ENV
               value: localdev
       nodeSelector:
       volumes:
