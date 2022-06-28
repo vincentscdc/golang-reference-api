@@ -7,13 +7,11 @@ Steps for preparing the project in CircleCI
 1. Create CircleCI Context to provide parameters
     | Name |
     |---|
-    | AWS_ACCESS_KEY_ID |
     | AWS_ECR_ACCESS_KEY_ID |
     | AWS_ECR_ACCOUNT_URL |
     | AWS_ECR_REGISTRY_ID |
     | AWS_ECR_SECRET_ACCESS_KEY |
     | AWS_REGION |
-    | AWS_SECRET_ACCESS_KEY |
     | EKS_CLUSTER_NAME |
     | EKS_NAMESPACE |
 1. Modify data in .circleci/config.yml
