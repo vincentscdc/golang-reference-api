@@ -67,9 +67,17 @@ jobs:
           command: |
             go install mvdan.cc/gofumpt@latest
       - run:
+          name: Install buf linter
+          command: |
+            go install github.com/bufbuild/buf/cmd/buf@v1.6.0
+      - run:
           name: Linter check
           command: |
             make lint
+      - run:
+          name: Linter check protocol buffer files
+          command:
+            make proto-lint
 
   test:
     executor: go-executor
