@@ -1,4 +1,6 @@
-[Golang Reference Guide](https://github.com/monacohq/golang-reference-guide)
+# golang-reference-api [![CircleCI](https://dl.circleci.com/status-badge/img/gh/monacohq/golang-reference-api/tree/main.svg?style=shield&circle-token=f53baf2c57298a27845912ce5290a942814cfcc9)](https://dl.circleci.com/status-badge/redirect/gh/monacohq/golang-reference-api/tree/main) [![Coverage Status](https://coveralls.io/repos/github/monacohq/golang-reference-api/badge.svg?branch=main&t=TuyuYC)](https://coveralls.io/github/monacohq/golang-reference-api?branch=main)
+
+* [Golang Reference Guide](https://github.com/monacohq/golang-reference-guide)
 
 ## CircleCI
 Steps for preparing the project in CircleCI
