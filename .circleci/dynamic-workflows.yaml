@@ -11,7 +11,7 @@ parameters:
     default: "/home/circleci/app"
   dev-changed:
     type: boolean
-    default: true # FIXME: change back to true
+    default: false
   sta-changed:
     type: boolean
     default: false
