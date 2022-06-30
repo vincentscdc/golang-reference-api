@@ -1,6 +1,30 @@
-## Unreleased (9aff9ee..9aff9ee)
+## Unreleased (7c97bbc..303ce72)
+#### Bug Fixes
+- adjust failureThresholds - (303ce72) - Vincent Serpoul
+- dev-changed back to false - (304929c) - Vincent Serpoul
+- use APP_ENV in local deployment - (6bcc809) - Vincent Serpoul
+- remove unnessecary circleci keys - (468fd38) - Vincent Serpoul
+#### Documentation
+- add circleci and coveralls status badges (#57) - (fa93d76) - Hans Liu
+#### Features
+- **(repo)** add repositories (#43) - (43c9582) - jonathanyang-cryptocom
+- test aws-arn - (3102589) - Li-Ting Tsai
+- Add buf linter into CI pipeline (#58) - (d5bf644) - gaston-chiu
+#### Miscellaneous Chores
+- update deps - (d23c708) - Vincent Serpoul
+#### Refactoring
+- Clean up codebase (#47) - (9467ca5) - gaston-chiu
+- Refactor error handling (#42) - (7c97bbc) - gaston-chiu
+
+- - -
+
+## Unreleased (9aff9ee..7e5ccfd)
 #### Bug Fixes
 - linkerd injection - (9aff9ee) - Vincent Serpoul
+#### Continuous Integration
+- deploy tag v2022.06.27.1049 to adev - (7e5ccfd) - Vincent Serpoul
+#### Miscellaneous Chores
+- update CHANGELOG.md for v2022.06.27.1033 - (5b9f0d2) - Vincent Serpoul
 
 - - -
 
