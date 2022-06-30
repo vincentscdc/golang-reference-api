@@ -2,6 +2,7 @@ version: 2.1
 
 orbs:
   aws-eks: circleci/aws-eks@2.2.0
+  aws-cli: circleci/aws-cli@3.1.1
   slack: circleci/slack@4.10.1
 
 parameters:
@@ -10,7 +11,7 @@ parameters:
     default: "/home/circleci/app"
   dev-changed:
     type: boolean
-    default: false
+    default: true # FIXME: change back to true
   sta-changed:
     type: boolean
     default: false
@@ -58,6 +59,23 @@ jobs:
         default: "latest"
     steps:
       - checkout
+      - aws-cli/install 
+      - run:
+          name: "Authenticate and get AWS env"
+          command: |
+            read -r AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN \<<< \
+              $(aws sts assume-role-with-web-identity \
+               --role-arn ${AWS_ROLE_ARN} \
+               --role-session-name "CircleCI-${CIRCLE_WORKFLOW_ID}" \
+               --web-identity-token $CIRCLE_OIDC_TOKEN \
+               --duration-seconds 3600 \
+               --query 'Credentials.[AccessKeyId,SecretAccessKey,SessionToken]' \
+               --output text)
+            export AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN
+            aws sts get-caller-identity
+            echo "export AWS_ACCESS_KEY_ID=\"$AWS_ACCESS_KEY_ID\"" >> $BASH_ENV
+            echo "export AWS_SECRET_ACCESS_KEY=\"$AWS_SECRET_ACCESS_KEY\"" >> $BASH_ENV
+            echo "export AWS_SESSION_TOKEN=\"$AWS_SESSION_TOKEN\"" >> $BASH_ENV
       - aws-eks/update-kubeconfig-with-authenticator:
           aws-region: ${AWS_REGION}
           cluster-name: ${EKS_CLUSTER_NAME}
