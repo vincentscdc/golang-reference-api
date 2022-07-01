@@ -25,12 +25,11 @@ func UserUUID(log *zerolog.Logger) func(http.Handler) http.Handler {
 			uuidVal := req.Header.Get(HTTPHeaderKeyUserUUID)
 			if uuidVal == "" {
 				respWriter.WriteHeader(http.StatusUnauthorized)
-				logWithField := log.With().Fields(map[string]string{
-					"path":   req.URL.Path,
-					"method": req.Method,
-				}).Logger()
 
-				logWithField.Error().Msg("uuid is empty")
+				log.Error().
+					Str("path", req.URL.Path).
+					Str("method", req.Method).
+					Msg("uuid is empty")
 
 				return
 			}

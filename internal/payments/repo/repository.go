@@ -8,7 +8,7 @@ import (
 	"github.com/google/uuid"
 )
 
-//go:generate mockgen -source=./repository.go -destination=./mockrepository.go -package=repo
+//go:generate mockgen -source=./repository.go -destination=../mock/repomock/mockrepository.go -package=repomock
 type Repository interface {
 	CreatePaymentPlan(ctx context.Context, arg *payments.CreatePlanParams) (*payments.Plan, error)
 	ListPaymentPlansByUserID(ctx context.Context, userID uuid.UUID) ([]*payments.Plan, error)

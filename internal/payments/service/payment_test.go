@@ -222,33 +222,28 @@ func TestPaymentServiceImp_CompletePaymentPlanCreation(t *testing.T) {
 		t.Errorf("failed to create payment plan %s", err.Error())
 	}
 
-	err = service.CompletePaymentPlanCreation(ctx, userID, paymentID)
+	payment, err := service.CompletePaymentPlanCreation(ctx, userID, paymentID)
 	if err != nil {
 		t.Errorf("failed to get payment plan %s", err.Error())
 	}
 
-	payments, err := service.GetPaymentPlanByUserID(ctx, userID)
-	if err != nil {
-		t.Errorf("failed to get payment plan %s", err.Error())
+	if payment.ID != paymentPlanParams.ID.String() {
+		t.Errorf("expected: %v, actual: %v", paymentPlanParams.ID, payment.ID)
 	}
 
-	if payments[0].ID != paymentPlanParams.ID.String() {
-		t.Errorf("expected: %v, actual: %v", paymentPlanParams.ID, payments[0].ID)
+	if payment.TotalAmount != paymentPlanParams.TotalAmount {
+		t.Errorf("expected: %v, actual: %v", paymentPlanParams.TotalAmount, payment.TotalAmount)
 	}
 
-	if payments[0].TotalAmount != paymentPlanParams.TotalAmount {
-		t.Errorf("expected: %v, actual: %v", paymentPlanParams.TotalAmount, payments[0].TotalAmount)
+	if payment.Currency != paymentPlanParams.Currency {
+		t.Errorf("expected: %v, actual: %v", paymentPlanParams.Currency, payment.Currency)
 	}
 
-	if payments[0].Currency != paymentPlanParams.Currency {
-		t.Errorf("expected: %v, actual: %v", paymentPlanParams.Currency, payments[0].Currency)
+	if payment.Status != paymentPlanStatusPending {
+		t.Errorf("expected: %v, actual: %v", paymentPlanStatusPending, payment.Status)
 	}
 
-	if payments[0].Status != paymentPlanStatusPending {
-		t.Errorf("expected: %v, actual: %v", paymentPlanStatusPending, payments[0].Status)
-	}
-
-	installment := payments[0].Installments[0]
+	installment := payment.Installments[0]
 	installmentParams := paymentPlanParams.Installments[0]
 
 	if installment.Currency != installmentParams.Currency {
@@ -333,7 +328,7 @@ func TestPaymentServiceImp_CompletePaymentPlanCreationNotFound(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			err := service.CompletePaymentPlanCreation(ctx, tt.userID, tt.paymentID)
+			_, err := service.CompletePaymentPlanCreation(ctx, tt.userID, tt.paymentID)
 			if !errors.Is(err, ErrRecordNotFound) {
 				t.Errorf("failed to get error, expected: %v, got: %v", ErrRecordNotFound, err)
 			}

@@ -1,7 +1,6 @@
 package internalfacing
 
 import (
-	"context"
 	"net/http"
 
 	"golangreferenceapi/internal/payments/port/rest"
@@ -18,6 +17,10 @@ type CreatePendingPaymentPlanRequest struct {
 
 type CreatePendingPaymentPlanResponse struct {
 	PendingPayment service.PaymentPlans `json:"payment"`
+}
+
+type CompletePaymentPlanResponse struct {
+	Payment service.PaymentPlans `json:"payment"`
 }
 
 type ListPaymentPlanResponse struct {
@@ -134,30 +137,13 @@ func completePaymentPlanHandler(
 			return nil, respErr
 		}
 
-		_, respErr = parseUUIDFormatParam(req.Context(), paramsGetter, urlParamInstallmentID)
-		if respErr != nil {
-			return nil, respErr
-		}
-
-		err := paymentService.CompletePaymentPlanCreation(context.Background(), *userUUID, *paymentUUID)
+		payment, err := paymentService.CompletePaymentPlanCreation(req.Context(), *userUUID, *paymentUUID)
 		if err != nil {
 			return nil, rest.ServiceErrorToErrorResp(err)
 		}
 
-		// optimize me :-(
-		paymentPlan, serviceErr := paymentService.GetPaymentPlanByUserID(req.Context(), *userUUID)
-		if serviceErr != nil {
-			return nil, rest.ServiceErrorToErrorResp(err)
-		}
-
-		resp := make([]ListPaymentPlanResponse, 0, len(paymentPlan))
-
-		for _, plan := range paymentPlan {
-			resp = append(resp, ListPaymentPlanResponse{Payment: plan})
-		}
-
 		return &handlerwrap.Response{
-			Body:           resp,
+			Body:           CompletePaymentPlanResponse{Payment: *payment},
 			HTTPStatusCode: http.StatusOK,
 		}, nil
 	}

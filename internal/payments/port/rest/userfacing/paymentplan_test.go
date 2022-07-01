@@ -6,15 +6,94 @@ import (
 	"net/http/httptest"
 	"reflect"
 	"testing"
+	"time"
 
+	"golangreferenceapi/internal/payments/common"
+	"golangreferenceapi/internal/payments/mock/servicemock"
+	"golangreferenceapi/internal/payments/port/rest"
 	"golangreferenceapi/internal/payments/service"
 
+	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/monacohq/golang-common/transport/http/handlerwrap"
 )
 
-func Test_listPaymentPlansHandler(t *testing.T) {
+func Test_listPaymentPlansHandler_SuccessCase(t *testing.T) {
 	t.Parallel()
+
+	userID := uuid.New()
+	expectedResult := []service.PaymentPlans{{
+		ID:          userID.String(),
+		Currency:    "usdc",
+		TotalAmount: "100",
+		Status:      "pending",
+		CreatedAt:   time.Now().Format(common.TimeFormat),
+		Installments: []service.PaymentPlanInstallment{{
+			ID:       uuid.New().String(),
+			Amount:   "100",
+			Currency: "usdc",
+			DueAt:    time.Now().Format(common.TimeFormat),
+			Status:   "pending",
+		}},
+	}}
+	resultBody := PaymentPlanResponse{Payments: expectedResult}
+	tests := []struct {
+		name                  string
+		query                 string
+		expectedResponse      *handlerwrap.Response
+		expectedErrorResponse *handlerwrap.ErrorResponse
+	}{
+		{
+			name:  "happy path",
+			query: "offset=0&limit=10&created_at_order=desc",
+			expectedResponse: &handlerwrap.Response{
+				Body:           resultBody,
+				HTTPStatusCode: http.StatusOK,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			t.Run(tt.name, func(t *testing.T) {
+				t.Parallel()
+
+				mockCtrl := gomock.NewController(t)
+				paymentService := servicemock.NewMockPaymentPlanService(mockCtrl)
+
+				gomock.InOrder(
+					paymentService.EXPECT().GetPaymentPlanByUserID(gomock.Any(), userID).
+						Return(expectedResult, nil).AnyTimes(),
+				)
+
+				req := httptest.NewRequest("GET", "/?"+tt.query, nil)
+
+				req = req.WithContext(context.WithValue(req.Context(), contextValKeyUserUUID, &userID))
+
+				resp, err := listPaymentPlansHandler(paymentService)(req)
+				if tt.expectedErrorResponse != nil {
+					if err.HTTPStatusCode != tt.expectedErrorResponse.HTTPStatusCode {
+						t.Errorf("returned a unexpected error code got %v want %v", err.HTTPStatusCode, tt.expectedErrorResponse.HTTPStatusCode)
+					}
+
+					return
+				}
+
+				if !reflect.DeepEqual(resp, tt.expectedResponse) {
+					t.Errorf("returned a unexpected response got %#v want %#v", resp, tt.expectedResponse)
+				}
+			})
+		})
+	}
+}
+
+func Test_listPaymentPlansHandler_ParamsError(t *testing.T) {
+	t.Parallel()
+
+	userID := uuid.New()
 
 	tests := []struct {
 		name                  string
@@ -23,22 +102,14 @@ func Test_listPaymentPlansHandler(t *testing.T) {
 		expectedErrorResponse *handlerwrap.ErrorResponse
 	}{
 		{
-			name:                  "happy path",
-			query:                 "offset=10&limit=10&created_at_order=desc",
-			expectedErrorResponse: &handlerwrap.ErrorResponse{HTTPStatusCode: http.StatusNotFound},
-			expectedResponse: &handlerwrap.Response{
-				Body:           ([]PaymentPlanResponse)(nil),
-				HTTPStatusCode: http.StatusOK,
-			},
-		},
-		{
 			name:                  "invalid pagination query params",
 			query:                 "offset=x&limit=x&created_at_order=x",
 			expectedErrorResponse: handlerwrap.ParsingParamError{}.ToErrorResponse(),
 		},
 	}
 
-	paymentService := service.NewPaymentPlanService()
+	mockCtrl := gomock.NewController(t)
+	paymentService := servicemock.NewMockPaymentPlanService(mockCtrl)
 
 	for _, tt := range tests {
 		tt := tt
@@ -49,8 +120,8 @@ func Test_listPaymentPlansHandler(t *testing.T) {
 				t.Parallel()
 
 				req := httptest.NewRequest("GET", "/?"+tt.query, nil)
-				id, _ := uuid.Parse("b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5")
-				req = req.WithContext(context.WithValue(req.Context(), contextValKeyUserUUID, &id))
+
+				req = req.WithContext(context.WithValue(req.Context(), contextValKeyUserUUID, &userID))
 
 				resp, err := listPaymentPlansHandler(paymentService)(req)
 				if tt.expectedErrorResponse != nil {
@@ -60,8 +131,61 @@ func Test_listPaymentPlansHandler(t *testing.T) {
 
 					return
 				}
+
 				if !reflect.DeepEqual(resp, tt.expectedResponse) {
 					t.Errorf("returned a unexpected response got %#v want %#v", resp, tt.expectedResponse)
+				}
+			})
+		})
+	}
+}
+
+func Test_listPaymentPlansHandler_InternalError(t *testing.T) {
+	t.Parallel()
+
+	userID := uuid.New()
+	tests := []struct {
+		uid              uuid.UUID
+		name             string
+		expectedResponse *handlerwrap.Response
+		err              error
+	}{
+		{
+			uid:  uuid.New(),
+			name: "function internal error",
+			err:  service.ErrRecordNotFound,
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			t.Run(tt.name, func(t *testing.T) {
+				t.Parallel()
+
+				mockCtrl := gomock.NewController(t)
+				defer mockCtrl.Finish()
+				paymentService := servicemock.NewMockPaymentPlanService(mockCtrl)
+
+				gomock.InOrder(
+					paymentService.EXPECT().
+						GetPaymentPlanByUserID(gomock.Any(), userID).
+						Return(nil, tt.err).AnyTimes(),
+				)
+
+				req := httptest.NewRequest("GET", "/", nil)
+
+				req = req.WithContext(context.WithValue(req.Context(), contextValKeyUserUUID, &userID))
+
+				resp, err := listPaymentPlansHandler(paymentService)(req)
+				if resp != nil {
+					t.Errorf("unexpected response %v", resp)
+				}
+
+				if !reflect.DeepEqual(rest.ServiceErrorToErrorResp(tt.err), err) {
+					t.Errorf("unexpected error, expected: %v, actual: %v", rest.ServiceErrorToErrorResp(tt.err), err)
 				}
 			})
 		})
@@ -71,7 +195,8 @@ func Test_listPaymentPlansHandler(t *testing.T) {
 func Test_listPaymentPlansHandler_MissingUserID(t *testing.T) {
 	t.Parallel()
 
-	paymentService := service.NewPaymentPlanService()
+	mockCtrl := gomock.NewController(t)
+	paymentService := servicemock.NewMockPaymentPlanService(mockCtrl)
 
 	req := httptest.NewRequest("GET", "/", nil)
 

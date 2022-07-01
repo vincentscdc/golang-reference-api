@@ -225,3 +225,6 @@ proto-lint:
 
 proto-clean:
 	rm -rf ./internal/port/grpc/protos
+
+mock-gen:
+	go generate ./...

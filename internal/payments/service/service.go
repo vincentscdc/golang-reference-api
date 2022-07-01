@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 )
 
+//go:generate mockgen -source=./service.go -destination=../mock/servicemock/service_mock.go -package=servicemock
 type PaymentPlanService interface {
 	// GetPaymentPlanByUserID gets payment plans selected by userID
 	GetPaymentPlanByUserID(ctx context.Context, userID uuid.UUID) ([]PaymentPlans, error)
@@ -23,7 +24,7 @@ type PaymentPlanService interface {
 		ctx context.Context,
 		userID uuid.UUID,
 		paymentPlanID uuid.UUID,
-	) error
+	) (*PaymentPlans, error)
 }
 
 type PaymentPlanInstallment struct {

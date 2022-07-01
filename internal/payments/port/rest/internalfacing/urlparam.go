@@ -8,10 +8,8 @@ import (
 )
 
 const (
-	urlParamUserUUID        = "user_uuid"
-	urlParamPaymentPlanUUID = "uuid"
-	urlParamPaymentUUID     = "payment_uuid"
-	urlParamInstallmentID   = "installments_id"
+	urlParamUserUUID    = "user_uuid"
+	urlParamPaymentUUID = "payment_uuid"
 )
 
 type PaymentPlanParam struct {
@@ -29,7 +27,7 @@ func parsePaymentPlanParam(
 	}
 
 	// payment plan uuid
-	paymentPlanUUID, err := parseUUIDFormatParam(ctx, paramsGetter, urlParamPaymentPlanUUID)
+	paymentPlanUUID, err := parseUUIDFormatParam(ctx, paramsGetter, urlParamPaymentUUID)
 	if err != nil {
 		return nil, err
 	}

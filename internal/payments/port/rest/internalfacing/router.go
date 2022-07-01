@@ -18,7 +18,7 @@ func AddRoutes(
 			handlerwrap.Wrapper(log, getCreditLineHandler(paramsGetter)))
 		rtr.Post("/user/{user_uuid}/payment_plans",
 			handlerwrap.Wrapper(log, createPendingPaymentPlanHandler(paramsGetter, paymentService)))
-		rtr.Post("/user/{user_uuid}/payment_plans/{uuid}/cancel",
+		rtr.Post("/user/{user_uuid}/payment_plans/{payment_uuid}/cancel",
 			handlerwrap.Wrapper(log, cancelPaymentPlanHandler(paramsGetter)))
 		rtr.Post("/user/{user_uuid}/payment_plans/{payment_uuid}/installments/{installments_id}/payment",
 			handlerwrap.Wrapper(log, completePaymentPlanHandler(paramsGetter, paymentService)))

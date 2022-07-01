@@ -93,19 +93,19 @@ func (p *PaymentServiceImp) CompletePaymentPlanCreation(
 	ctx context.Context,
 	userID uuid.UUID,
 	paymentPlanID uuid.UUID,
-) error {
+) (*PaymentPlans, error) {
 	plan, ok := p.memoryStorage[userID]
 	if !ok {
-		return ErrRecordNotFound
+		return nil, ErrRecordNotFound
 	}
 
 	for i := range plan {
 		if plan[i].ID == paymentPlanID.String() {
 			plan[i].Installments[0].Status = PaymentInstallmentStatusPaid
 
-			return nil
+			return &plan[i], nil
 		}
 	}
 
-	return ErrRecordNotFound
+	return nil, ErrRecordNotFound
 }

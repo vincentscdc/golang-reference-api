@@ -1,7 +1,6 @@
 package userfacing
 
 import (
-	"context"
 	"net/http"
 
 	"golangreferenceapi/internal/payments/port/rest"
@@ -41,7 +40,7 @@ func listPaymentPlansHandler(paymentService service.PaymentPlanService) handlerw
 			return nil, err
 		}
 
-		paymentPlans, serviceErr := paymentService.GetPaymentPlanByUserID(context.Background(), *uid)
+		paymentPlans, serviceErr := paymentService.GetPaymentPlanByUserID(req.Context(), *uid)
 		if serviceErr != nil {
 			return nil, rest.ServiceErrorToErrorResp(serviceErr)
 		}
