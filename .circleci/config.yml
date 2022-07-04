@@ -2,6 +2,9 @@ parameters:
   workspace_directory:
     type: string
     default: "/home/circleci/app"
+  app_name:
+    type: string
+    default: "golang-reference-api"
 
 version: 2.1
 
@@ -38,7 +41,7 @@ commands:
     parameters:
       image-name:
         type: string
-        description: "ecr url / app name (for ex 123456123456.dkr.ecr.ap-southeast-1.amazonaws.com/app-golang-reference-api)"
+        description: "ecr url / app name (for ex 123456123456.dkr.ecr.ap-southeast-1.amazonaws.com/app-<< pipeline.parameters.app_name >>)"
       image-tag:
         type: string
         description: can be a tag (v1.0.1) or a commit sha1 ("${CIRCLE_SHA1}") for example
@@ -50,7 +53,7 @@ commands:
       - run:
           name: "tag and push image"
           command: |
-            docker tag golang-reference-api << parameters.image-name >>:<< parameters.image-tag >>
+            docker tag << pipeline.parameters.app_name >> << parameters.image-name >>:<< parameters.image-tag >>
             docker push << parameters.image-name >>:<< parameters.image-tag >>
 
 jobs:
@@ -126,7 +129,7 @@ jobs:
     steps:
       - docker-build
       - ecr-push:
-          image-name: "${AWS_ECR_REGISTRY_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/app-golang-reference-api"
+          image-name: "${AWS_ECR_REGISTRY_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/app-<< pipeline.parameters.app_name >>"
           image-tag: "${CIRCLE_TAG:-$CIRCLE_SHA1}"
 
 workflows:
@@ -150,7 +153,7 @@ workflows:
             tags:
               only: /.*/
       - docker-build-tag-push:
-          context: golang-reference-api-dev
+          context: << pipeline.parameters.app_name >>-dev
           requires:
             - linter
             - test

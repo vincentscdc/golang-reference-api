@@ -8,6 +8,9 @@ parameters:
   workspace_directory:
     type: string
     default: "/home/circleci/app"
+  app_name:
+    type: string
+    default: "golang-reference-api"
   dev-changed:
     type: boolean
     default: false
@@ -41,7 +44,7 @@ jobs:
           command: curl -L https://raw.github.com/stoplightio/spectral/master/scripts/install.sh | sh
       - run:
           name: "Run Spectral Lint"
-          command: /usr/local/bin/spectral lint -r ./spectral/monaco.yml -o lint-results/golang-reference-api.xml -f junit internal/docs/swagger.json
+          command: /usr/local/bin/spectral lint -r ./spectral/monaco.yml -o lint-results/<< pipeline.parameters.app_name >>.xml -f junit internal/docs/swagger.json
       - store_test_results:
           path: lint-results
 
@@ -96,7 +99,7 @@ jobs:
                   "text": {
                     "type": "mrkdwn",
                     "text": "Click the button to view changelog - tag version: ${TAG_VERSION}. 
-                    Note: This is a sample production pipeline for golang-reference-api app. 
+                    Note: This is a sample production pipeline for << pipeline.parameters.app_name >> app. 
                     Hence, approving the workflow will not deploy anything in production."
                   },
                   "accessory": {
@@ -124,7 +127,7 @@ workflows:
     when: << pipeline.parameters.dev-changed >>
     jobs:
       - deploy-api-kustomize:
-          context: golang-reference-api-dev
+          context: << pipeline.parameters.app_name >>-dev
           kustomize-folder: adev-app-main
           filters:
             tags:
@@ -134,7 +137,7 @@ workflows:
     when: << pipeline.parameters.sta-changed >>
     jobs:
       - deploy-api-kustomize:
-          context: golang-reference-api-staging
+          context: << pipeline.parameters.app_name >>-staging
           kustomize-folder: asta-app-main
           filters:
             branches:
@@ -147,7 +150,7 @@ workflows:
     when: << pipeline.parameters.pro-changed >>
     jobs:
       - slack/on-hold:
-          context: golang-reference-api-prod
+          context: << pipeline.parameters.app_name >>-prod
           mentions: "@channel"
           filters:
             branches:
@@ -156,7 +159,7 @@ workflows:
             tags:
               only: /.*/
       - send-slack-changelog:
-          context: golang-reference-api-prod
+          context: << pipeline.parameters.app_name >>-prod
           requires:
             - slack/on-hold
           filters:
@@ -177,7 +180,7 @@ workflows:
               only: /.*/
       # Note: this app will not be deployed in production, hence the following code snippet is commented out and only for reference
       # - deploy-api-kustomize:
-      #     context: golang-reference-api-prod
+      #     context: << pipeline.parameters.app_name >>-prod
       #     requires:
       #       - pause_workflow
       #     kustomize-folder: apro-app-main
