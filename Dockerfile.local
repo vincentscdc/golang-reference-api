@@ -39,8 +39,8 @@ COPY ./ ./
 
 ARG LAST_MAIN_COMMIT_HASH
 ARG LAST_MAIN_COMMIT_TIME
-ENV FLAG="-X main.CommitTime=${LAST_MAIN_COMMIT_TIME}"
-ENV FLAG="$FLAG -X main.CommitHash=${LAST_MAIN_COMMIT_HASH}"
+ENV FLAG="-X api.CommitTime=${LAST_MAIN_COMMIT_TIME}"
+ENV FLAG="$FLAG -X api.CommitHash=${LAST_MAIN_COMMIT_HASH}"
 
 RUN CGO_ENABLED=0 go build \
     -installsuffix 'static' \

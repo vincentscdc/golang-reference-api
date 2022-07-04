@@ -1,4 +1,5 @@
 application:
+  version: "v1"
   port: 8000
   prettylog: false
   url:
