@@ -1,4 +1,4 @@
-package repo
+package sqlc
 
 import (
 	"context"
@@ -9,15 +9,15 @@ import (
 	"github.com/google/uuid"
 )
 
-type SQLCRepo struct {
+type Repo struct {
 	querier db.Querier
 }
 
-func NewSQLCRepository(querier db.Querier) *SQLCRepo {
-	return &SQLCRepo{querier: querier}
+func NewSQLCRepository(querier db.Querier) *Repo {
+	return &Repo{querier: querier}
 }
 
-func (impl *SQLCRepo) CreatePaymentPlan(ctx context.Context, arg *payments.CreatePlanParams) (*payments.Plan, error) {
+func (impl *Repo) CreatePaymentPlan(ctx context.Context, arg *payments.CreatePlanParams) (*payments.Plan, error) {
 	dbEntity, err := impl.querier.CreatePaymentPlan(ctx, &db.CreatePaymentPlanParams{
 		ID:       uuid.New(),
 		UserID:   arg.UserID,
@@ -26,7 +26,7 @@ func (impl *SQLCRepo) CreatePaymentPlan(ctx context.Context, arg *payments.Creat
 		Status:   db.PaymentStatus(arg.Status),
 	})
 	if err != nil {
-		return nil, pgxDBQueryRunError{WrappedErr: err}
+		return nil, err
 	}
 
 	plan, err := impl.newPlanFromDBEntity(dbEntity)
@@ -37,10 +37,10 @@ func (impl *SQLCRepo) CreatePaymentPlan(ctx context.Context, arg *payments.Creat
 	return plan, nil
 }
 
-func (impl *SQLCRepo) ListPaymentPlansByUserID(ctx context.Context, userID uuid.UUID) ([]*payments.Plan, error) {
+func (impl *Repo) ListPaymentPlansByUserID(ctx context.Context, userID uuid.UUID) ([]*payments.Plan, error) {
 	entities, err := impl.querier.ListPaymentPlansByUserID(ctx, userID)
 	if err != nil {
-		return nil, pgxDBQueryRunError{WrappedErr: err}
+		return nil, err
 	}
 
 	plans := make([]*payments.Plan, len(entities))
@@ -57,7 +57,7 @@ func (impl *SQLCRepo) ListPaymentPlansByUserID(ctx context.Context, userID uuid.
 	return plans, nil
 }
 
-func (impl *SQLCRepo) CreatePaymentInstallment(
+func (impl *Repo) CreatePaymentInstallment(
 	ctx context.Context,
 	arg *payments.CreateInstallmentParams,
 ) (*payments.Installment, error) {
@@ -70,7 +70,7 @@ func (impl *SQLCRepo) CreatePaymentInstallment(
 		Status:        db.PaymentInstallmentStatus(arg.Status),
 	})
 	if err != nil {
-		return nil, pgxDBQueryRunError{WrappedErr: err}
+		return nil, err
 	}
 
 	installment, err := impl.newInstallmentFromDBEntity(dbEntity)
@@ -81,13 +81,13 @@ func (impl *SQLCRepo) CreatePaymentInstallment(
 	return installment, nil
 }
 
-func (impl *SQLCRepo) ListPaymentInstallmentsByPlanID(
+func (impl *Repo) ListPaymentInstallmentsByPlanID(
 	ctx context.Context,
 	planID uuid.UUID,
 ) ([]*payments.Installment, error) {
 	entities, err := impl.querier.ListPaymentInstallmentsByPlanID(ctx, planID)
 	if err != nil {
-		return nil, pgxDBQueryRunError{WrappedErr: err}
+		return nil, err
 	}
 
 	installments := make([]*payments.Installment, len(entities))
@@ -104,7 +104,7 @@ func (impl *SQLCRepo) ListPaymentInstallmentsByPlanID(
 	return installments, nil
 }
 
-func (impl *SQLCRepo) newPlanFromDBEntity(entity interface{}) (*payments.Plan, error) {
+func (impl *Repo) newPlanFromDBEntity(entity interface{}) (*payments.Plan, error) {
 	createPaymentPlanRowEntity, valid := entity.(*db.CreatePaymentPlanRow)
 	if valid {
 		return &payments.Plan{
@@ -144,10 +144,10 @@ func (impl *SQLCRepo) newPlanFromDBEntity(entity interface{}) (*payments.Plan, e
 		}, nil
 	}
 
-	return nil, unsupportedDBEntityError{}
+	return nil, UnsupportedDBEntityError{}
 }
 
-func (impl *SQLCRepo) newInstallmentFromDBEntity(entity interface{}) (*payments.Installment, error) {
+func (impl *Repo) newInstallmentFromDBEntity(entity interface{}) (*payments.Installment, error) {
 	createInstRowEntity, valid := entity.(*db.CreatePaymentInstallmentsRow)
 	if valid {
 		return &payments.Installment{
@@ -190,5 +190,5 @@ func (impl *SQLCRepo) newInstallmentFromDBEntity(entity interface{}) (*payments.
 		}, nil
 	}
 
-	return nil, unsupportedDBEntityError{}
+	return nil, UnsupportedDBEntityError{}
 }

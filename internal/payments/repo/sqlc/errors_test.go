@@ -1,4 +1,4 @@
-package repo
+package sqlc
 
 import "testing"
 
@@ -11,13 +11,8 @@ func TestErrors(t *testing.T) {
 		msg  string
 	}{
 		{
-			name: "query run error",
-			err:  pgxDBQueryRunError{},
-			msg:  "failed to run query",
-		},
-		{
 			name: "unsupported db entity",
-			err:  unsupportedDBEntityError{},
+			err:  UnsupportedDBEntityError{},
 			msg:  "DB entity interface does not match any supported struct",
 		},
 	}
