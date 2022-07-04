@@ -18,6 +18,7 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	httpSwagger "github.com/swaggo/http-swagger"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"google.golang.org/grpc"
 )
@@ -65,7 +66,10 @@ func (s *API) setupHTTPServer() {
 
 func (s *API) setupGRPCServer() {
 	// grpc
-	s.grpcServer = grpc.NewServer()
+	s.grpcServer = grpc.NewServer(
+		grpc.UnaryInterceptor(otelgrpc.UnaryServerInterceptor()),
+		grpc.StreamInterceptor(otelgrpc.StreamServerInterceptor()),
+	)
 	payLaterServer := grpcuserfacing.NewPayLaterServer()
 	creditline.RegisterPayLaterServiceServer(s.grpcServer, payLaterServer)
 }
