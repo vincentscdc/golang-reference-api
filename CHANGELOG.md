@@ -1,6 +1,29 @@
-## Unreleased (9aff9ee..9aff9ee)
+## Unreleased (7c97bbc..46998ab)
+#### Bug Fixes
+- use APP_ENV in local deployment - (6bcc809) - Vincent Serpoul
+- remove unnessecary circleci keys - (468fd38) - Vincent Serpoul
+#### Documentation
+- add circleci and coveralls status badges (#57) - (fa93d76) - Hans Liu
+#### Features
+- **(repo)** add repositories (#43) - (43c9582) - jonathanyang-cryptocom
+- Add controller and service test coverage (#53) - (4c5eee4) - gaston-chiu
+- Add buf linter into CI pipeline (#58) - (d5bf644) - gaston-chiu
+#### Miscellaneous Chores
+- **(localdev)** add port forward in the deploy makefile - (46998ab) - Vincent Serpoul
+#### Refactoring
+- **(main)** split into multiple functions (#72) - (25093c5) - BennTayCDC
+- Clean up codebase (#47) - (9467ca5) - gaston-chiu
+- Refactor error handling (#42) - (7c97bbc) - gaston-chiu
+
+- - -
+
+## Unreleased (9aff9ee..7e5ccfd)
 #### Bug Fixes
 - linkerd injection - (9aff9ee) - Vincent Serpoul
+#### Continuous Integration
+- deploy tag v2022.06.27.1049 to adev - (7e5ccfd) - Vincent Serpoul
+#### Miscellaneous Chores
+- update CHANGELOG.md for v2022.06.27.1033 - (5b9f0d2) - Vincent Serpoul
 
 - - -
 
