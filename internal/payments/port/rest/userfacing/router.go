@@ -1,6 +1,7 @@
 package userfacing
 
 import (
+	"golangreferenceapi/internal/payments/port/rest"
 	"golangreferenceapi/internal/payments/service"
 
 	"github.com/go-chi/chi/v5"
@@ -9,7 +10,6 @@ import (
 )
 
 const (
-	responseKeyCreditInfo   = "credit_info"
 	responseKeyPaymentPlans = "payment_plans"
 )
 
@@ -17,28 +17,9 @@ func AddRoutes(
 	router chi.Router, log *zerolog.Logger, paymentService service.PaymentPlanService,
 ) {
 	router.Route("/api/pay_later/", func(r chi.Router) {
-		r.Use(UserUUID(log))
-		r.Get("/credit_line", handlerwrap.Wrapper(log, getCreditLineHandlerOKStyle(log)))
+		r.Use(rest.UserUUID(log))
 		r.Get("/payment_plans", handlerwrap.Wrapper(log, listPaymentPlansHandlerOKStyle(log, paymentService)))
 	})
-}
-
-// CreditLineResponseOKStyle represents the response struct
-type CreditLineResponseOKStyle struct {
-	OKStyleResponseBase
-	CreditLine *CreditLineResponse `json:"credit_info,omitempty"`
-}
-
-// getCreditLineHandler renders the credit line
-// @Summary Renders a user's credit line info
-// @Description returns the amount and status
-// @Tags credit_line
-// @Produce json
-// @Router /api/pay_later/credit_line [get]
-// @Param X-CRYPTO-USER-UUID header string true "User UUID"
-// @Success 200 {object} CreditLineResponseOKStyle
-func getCreditLineHandlerOKStyle(log *zerolog.Logger) handlerwrap.TypedHandler {
-	return OKStyleWrapper(log, responseKeyCreditInfo, getCreditLineHandler())
 }
 
 // PaymentPlansResponseOKStyle represents the response struct

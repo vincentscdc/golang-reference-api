@@ -1,5 +1,4 @@
-// Package userfacing contains all user HTTP APIs
-package userfacing
+package rest
 
 type contextValKey string
 

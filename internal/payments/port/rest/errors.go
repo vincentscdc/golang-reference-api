@@ -18,6 +18,13 @@ func ServiceErrorToErrorResp(err error) *handlerwrap.ErrorResponse {
 			"record_not_found",
 			"record not found",
 		)
+	case errors.Is(err, service.ErrGenerateUUID):
+		return handlerwrap.NewErrorResponse(
+			err,
+			http.StatusInternalServerError,
+			"uuid_generate_failed",
+			"uuid generated failed",
+		)
 	default:
 		return handlerwrap.InternalServerError{Err: err}.ToErrorResponse()
 	}

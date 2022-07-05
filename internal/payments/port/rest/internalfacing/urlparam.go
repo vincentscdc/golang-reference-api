@@ -17,27 +17,6 @@ type PaymentPlanParam struct {
 	UserUUID *uuid.UUID `json:"user_uuid"`
 }
 
-func parsePaymentPlanParam(
-	ctx context.Context, paramsGetter handlerwrap.NamedURLParamsGetter,
-) (*PaymentPlanParam, *handlerwrap.ErrorResponse) {
-	// user uuid
-	userUUID, err := parseUUIDFormatParam(ctx, paramsGetter, urlParamUserUUID)
-	if err != nil {
-		return nil, err
-	}
-
-	// payment plan uuid
-	paymentPlanUUID, err := parseUUIDFormatParam(ctx, paramsGetter, urlParamPaymentUUID)
-	if err != nil {
-		return nil, err
-	}
-
-	return &PaymentPlanParam{
-		UUID:     paymentPlanUUID,
-		UserUUID: userUUID,
-	}, nil
-}
-
 func parseUUIDFormatParam(
 	ctx context.Context, paramsGetter handlerwrap.NamedURLParamsGetter, name string,
 ) (*uuid.UUID, *handlerwrap.ErrorResponse) {

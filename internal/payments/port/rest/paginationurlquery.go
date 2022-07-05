@@ -1,4 +1,4 @@
-package userfacing
+package rest
 
 import (
 	"net/url"
@@ -14,8 +14,8 @@ const (
 	paginationIntBase    = 10
 	paginationIntBitSize = 64
 
-	paymentPlansCreatedAtOrderASC  = "asc"
-	paymentPlansCreatedAtOrderDESC = "desc"
+	PaymentPlansCreatedAtOrderASC  = "asc"
+	PaymentPlansCreatedAtOrderDESC = "desc"
 )
 
 type PaginationURLQuery struct {
@@ -24,7 +24,7 @@ type PaginationURLQuery struct {
 	CreatedAtOrder string `json:"created_at_order"`
 }
 
-func parsePaginationURLQuery(
+func ParsePaginationURLQuery(
 	u *url.URL, defaultLimit int64,
 	defaultCreatedAtOrder string,
 ) (*PaginationURLQuery, *handlerwrap.ErrorResponse) {
@@ -36,17 +36,17 @@ func parsePaginationURLQuery(
 		err            *handlerwrap.ErrorResponse
 	)
 
-	offset, err = parsePaginationOffset(queryValues)
+	offset, err = ParsePaginationOffset(queryValues)
 	if err != nil {
 		return nil, err
 	}
 
-	limit, err = parsePaginationLimit(queryValues, defaultLimit)
+	limit, err = ParsePaginationLimit(queryValues, defaultLimit)
 	if err != nil {
 		return nil, err
 	}
 
-	createdAtOrder, err = parsePaginationCreatedAtOrder(queryValues, defaultCreatedAtOrder)
+	createdAtOrder, err = ParsePaginationCreatedAtOrder(queryValues, defaultCreatedAtOrder)
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +58,7 @@ func parsePaginationURLQuery(
 	}, nil
 }
 
-func parsePaginationOffset(values url.Values) (int64, *handlerwrap.ErrorResponse) {
+func ParsePaginationOffset(values url.Values) (int64, *handlerwrap.ErrorResponse) {
 	var (
 		offset int64
 		err    error
@@ -82,7 +82,7 @@ func parsePaginationOffset(values url.Values) (int64, *handlerwrap.ErrorResponse
 	return offset, nil
 }
 
-func parsePaginationLimit(values url.Values, defaultLimit int64) (int64, *handlerwrap.ErrorResponse) {
+func ParsePaginationLimit(values url.Values, defaultLimit int64) (int64, *handlerwrap.ErrorResponse) {
 	var (
 		limit int64
 		err   error
@@ -106,11 +106,11 @@ func parsePaginationLimit(values url.Values, defaultLimit int64) (int64, *handle
 	return limit, nil
 }
 
-func parsePaginationCreatedAtOrder(
+func ParsePaginationCreatedAtOrder(
 	values url.Values, defaultCreatedAtOrder string,
 ) (string, *handlerwrap.ErrorResponse) {
 	createdAtOrderVal := values.Get(createAtOrderKey)
-	if createdAtOrderVal == paymentPlansCreatedAtOrderASC || createdAtOrderVal == paymentPlansCreatedAtOrderDESC {
+	if createdAtOrderVal == PaymentPlansCreatedAtOrderASC || createdAtOrderVal == PaymentPlansCreatedAtOrderDESC {
 		return createdAtOrderVal, nil
 	}
 

@@ -1,4 +1,4 @@
-package userfacing
+package rest
 
 import (
 	"bytes"
@@ -6,6 +6,8 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	"github.com/google/uuid"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/rs/zerolog"
@@ -21,7 +23,7 @@ func Test_UserUUID(t *testing.T) {
 
 	echoHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		userID, err := getUserUUID(r.Context())
+		userID, err := GetUserUUID(r.Context())
 		if err != nil {
 			t.Fatalf("failed to get user uuid %v", err.Error)
 		}
@@ -95,10 +97,46 @@ func Test_UserUUID(t *testing.T) {
 				t.Errorf("handler returned unexpected body: got %v want %v",
 					rr.Body.String(), tt.expectedBody)
 			}
-
-			//if strings.TrimSpace(logMsg.String()) != tt.expectedLogMsg {
-			//	t.Errorf("handler log unexpected log message: got %v want %v", logMsg.String(), tt.expectedLogMsg)
-			//}
 		})
 	}
+}
+
+func Test_UUIDMiddlewareNotSet(t *testing.T) {
+	t.Parallel()
+
+	echoHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		userID, err := GetUserUUID(r.Context())
+		if err != nil {
+			w.WriteHeader(http.StatusUnauthorized)
+
+			return
+		}
+		if _, err := w.Write([]byte(userID.String())); err != nil {
+			t.Fatalf("unexpected write into response error: %v", err)
+		}
+
+		w.WriteHeader(http.StatusOK)
+	})
+
+	r := chi.NewRouter()
+	r.Get("/", echoHandler)
+
+	srv := httptest.NewServer(r)
+	defer srv.Close()
+
+	req := httptest.NewRequest("GET", "/", nil)
+	setRequestHeaderUserID(req, uuid.New().String())
+
+	rr := httptest.NewRecorder()
+
+	r.ServeHTTP(rr, req)
+
+	if status := rr.Code; status != http.StatusUnauthorized {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, http.StatusUnauthorized)
+	}
+}
+
+func setRequestHeaderUserID(r *http.Request, uuid string) {
+	r.Header.Set(HTTPHeaderKeyUserUUID, uuid)
 }

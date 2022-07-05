@@ -19,6 +19,10 @@ test-leak: ## launch all tests with leak detection (if possible)
 	go test ./internal/payments/port/rest/userfacing/... -leak
 	go test ./internal/payments/port/rest/internalfacing/... -leak
 
+test-coverage-report:
+	go test -v  ./... -cover -race -covermode=atomic -coverprofile=./coverage.out
+	go tool cover -html=coverage.out
+
 #############
 # benchmark #
 #############

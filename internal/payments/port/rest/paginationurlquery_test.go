@@ -1,4 +1,4 @@
-package userfacing
+package rest
 
 import (
 	"net/url"
@@ -116,7 +116,7 @@ func Test_getPaginationURLQuery(t *testing.T) {
 				t.Fatalf("invalid rawURL: %v", err)
 			}
 
-			query, getErr := parsePaginationURLQuery(u, tt.args.defaultLimit, tt.args.defaultCreatedAtOrder)
+			query, getErr := ParsePaginationURLQuery(u, tt.args.defaultLimit, tt.args.defaultCreatedAtOrder)
 			if (getErr != nil) != tt.wantErr {
 				t.Errorf("returned unexpected error: got %v, want %v", getErr, tt.wantErr)
 

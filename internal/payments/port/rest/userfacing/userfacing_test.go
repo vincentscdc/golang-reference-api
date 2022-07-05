@@ -2,7 +2,6 @@ package userfacing
 
 import (
 	"flag"
-	"net/http"
 	"os"
 	"testing"
 
@@ -20,8 +19,4 @@ func TestMain(m *testing.M) {
 	}
 
 	os.Exit(m.Run())
-}
-
-func setRequestHeaderUserID(r *http.Request, uuid string) {
-	r.Header.Set(HTTPHeaderKeyUserUUID, uuid)
 }

@@ -30,12 +30,12 @@ type Installments struct {
 func listPaymentPlansHandler(paymentService service.PaymentPlanService) handlerwrap.TypedHandler {
 	return func(req *http.Request) (*handlerwrap.Response, *handlerwrap.ErrorResponse) {
 		// user uuid
-		uid, err := getUserUUID(req.Context())
+		uid, err := rest.GetUserUUID(req.Context())
 		if err != nil {
 			return nil, err
 		}
 		// pagination params
-		_, err = parsePaginationURLQuery(req.URL, paymentPlansDefaultLimit, paymentPlansCreatedAtOrderDESC)
+		_, err = rest.ParsePaginationURLQuery(req.URL, paymentPlansDefaultLimit, rest.PaymentPlansCreatedAtOrderDESC)
 		if err != nil {
 			return nil, err
 		}

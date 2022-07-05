@@ -1,4 +1,4 @@
-package userfacing
+package rest
 
 import (
 	"context"
@@ -15,7 +15,14 @@ const (
 	HTTPHeaderKeyUserUUID = "X-CRYPTO-USER-UUID"
 )
 
-var ErrUserIDNotFound = errors.New("user id not found")
+var errUserIDNotFound = errors.New("user id not found")
+
+var ErrUserIDNotFound = handlerwrap.NewErrorResponse(
+	errUserIDNotFound,
+	http.StatusUnauthorized,
+	"user_id_not_found",
+	"user id not found",
+)
 
 // UserUUID a middleware to get the user uuid from HTTP header.
 // set it into ctx otherwise abort with a 401 HTTP status code
@@ -45,21 +52,20 @@ func UserUUID(log *zerolog.Logger) func(http.Handler) http.Handler {
 				return
 			}
 
-			next.ServeHTTP(respWriter, req.WithContext(setUserUUID(req.Context(), &userUUID)))
+			next.ServeHTTP(respWriter, req.WithContext(SetUserUUID(req.Context(), &userUUID)))
 		})
 	}
 }
 
-func setUserUUID(ctx context.Context, userUUID *uuid.UUID) context.Context {
+func SetUserUUID(ctx context.Context, userUUID *uuid.UUID) context.Context {
 	return context.WithValue(ctx, contextValKeyUserUUID, userUUID)
 }
 
-func getUserUUID(ctx context.Context) (*uuid.UUID, *handlerwrap.ErrorResponse) {
+func GetUserUUID(ctx context.Context) (*uuid.UUID, *handlerwrap.ErrorResponse) {
 	userUUID, ok := ctx.Value(contextValKeyUserUUID).(*uuid.UUID)
 	if ok {
 		return userUUID, nil
 	}
 
-	return nil,
-		handlerwrap.NewErrorResponse(ErrUserIDNotFound, http.StatusUnauthorized, "", "user id not found")
+	return nil, ErrUserIDNotFound
 }

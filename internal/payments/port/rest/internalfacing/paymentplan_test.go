@@ -2,6 +2,7 @@ package internalfacing
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"io"
@@ -26,7 +27,7 @@ func Test_createPendingPaymentPlanHandlerInputError(t *testing.T) {
 	t.Parallel()
 
 	type args struct {
-		userUUID     string
+		userUUID     uuid.UUID
 		reqBody      io.Reader
 		paramsGetter handlerwrap.NamedURLParamsGetter
 	}
@@ -37,20 +38,9 @@ func Test_createPendingPaymentPlanHandlerInputError(t *testing.T) {
 		wantErrorResponse *handlerwrap.ErrorResponse
 	}{
 		{
-			name: "returns 400 if passing a invalid param user_uuid",
-			args: args{
-				userUUID:     "x",
-				paramsGetter: rest.ChiNamedURLParamsGetter,
-			},
-			wantErrorResponse: handlerwrap.ParsingParamError{
-				Name:  urlParamUserUUID,
-				Value: "x",
-			}.ToErrorResponse(),
-		},
-		{
 			name: "returns 400 if passing a broken reqBody",
 			args: args{
-				userUUID: "b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5",
+				userUUID: uuid.New(),
 				reqBody: readerFunc(func(p []byte) (int, error) {
 					return 0, errors.New("failed")
 				}),
@@ -61,7 +51,7 @@ func Test_createPendingPaymentPlanHandlerInputError(t *testing.T) {
 		{
 			name: "returns 400 if passing a invalid body",
 			args: args{
-				userUUID:     "b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5",
+				userUUID:     uuid.New(),
 				reqBody:      strings.NewReader(`{x}`),
 				paramsGetter: rest.ChiNamedURLParamsGetter,
 			},
@@ -78,7 +68,9 @@ func Test_createPendingPaymentPlanHandlerInputError(t *testing.T) {
 			t.Parallel()
 
 			req := httptest.NewRequest("POST", "/", tt.args.reqBody)
-			setURLParams(req, map[string]string{urlParamUserUUID: tt.args.userUUID})
+			setURLParams(req, map[string]string{
+				urlParamUserUUID: tt.args.userUUID.String(),
+			})
 
 			_, errRsp := createPendingPaymentPlanHandler(tt.args.paramsGetter, paymentService)(req)
 			if errRsp != nil {
@@ -90,6 +82,48 @@ func Test_createPendingPaymentPlanHandlerInputError(t *testing.T) {
 			}
 
 			t.Errorf("expected error not exist")
+		})
+	}
+}
+
+func Test_UserIDNotFound(t *testing.T) {
+	t.Parallel()
+
+	paymentService := servicemock.NewMockPaymentPlanService(gomock.NewController(t))
+
+	tests := []struct {
+		name   string
+		hander handlerwrap.TypedHandler
+	}{
+		{
+			name:   "complete payment handler",
+			hander: completePaymentPlanHandler(rest.ChiNamedURLParamsGetter, paymentService),
+		},
+		{
+			name:   "create pending payment handler",
+			hander: createPendingPaymentPlanHandler(rest.ChiNamedURLParamsGetter, paymentService),
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			req := httptest.NewRequest("POST", "/", strings.NewReader("{}"))
+
+			resp, respErr := tt.hander(req)
+			if resp != nil {
+				t.Errorf("unexpected resp, %v", resp)
+			}
+
+			if reflect.TypeOf(respErr).Name() != reflect.TypeOf(handlerwrap.ParsingParamError{}.ToErrorResponse()).Name() {
+				t.Errorf("unexpected error response, expected: %v, actual: %v",
+					reflect.TypeOf(handlerwrap.ParsingParamError{}.ToErrorResponse()).Name(),
+					reflect.TypeOf(respErr).Name(),
+				)
+			}
 		})
 	}
 }
@@ -155,7 +189,9 @@ func Test_createPendingPaymentPlanHandler(t *testing.T) {
 	}
 
 	req := httptest.NewRequest("POST", "/", bytes.NewReader(reqBody))
-	setURLParams(req, map[string]string{urlParamUserUUID: userUUID.String()})
+	setURLParams(req, map[string]string{
+		urlParamUserUUID: userUUID.String(),
+	})
 
 	resp, errRsp := createPendingPaymentPlanHandler(paramsGetter, paymentService)(req)
 	if errRsp != nil {
@@ -289,7 +325,9 @@ func Test_createPendingPaymentPlanHandlerServiceError(t *testing.T) {
 			}
 
 			req := httptest.NewRequest("POST", "/", bytes.NewReader(reqBody))
-			setURLParams(req, map[string]string{urlParamUserUUID: userUUID.String()})
+			setURLParams(req, map[string]string{
+				urlParamUserUUID: userUUID.String(),
+			})
 
 			resp, errRsp := createPendingPaymentPlanHandler(paramsGetter, paymentService)(req)
 			if resp != nil {
@@ -310,107 +348,6 @@ func Benchmark_createPendingPaymentPlanHandler(b *testing.B) {
 	paymentService := service.NewPaymentPlanService()
 
 	h := createPendingPaymentPlanHandler(rest.ChiNamedURLParamsGetter, paymentService)
-
-	b.ResetTimer()
-
-	for n := 0; n < b.N; n++ {
-		_, _ = h(req)
-	}
-}
-
-func Test_cancelPaymentPlanHandler(t *testing.T) {
-	t.Parallel()
-
-	type args struct {
-		userUUID        string
-		paymentPlanUUID string
-		paramsGetter    handlerwrap.NamedURLParamsGetter
-	}
-
-	tests := []struct {
-		name              string
-		args              args
-		wantResponse      *handlerwrap.Response
-		wantErrorResponse *handlerwrap.ErrorResponse
-	}{
-		{
-			name: "happy path",
-			args: args{
-				userUUID:        "b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5",
-				paymentPlanUUID: "b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5",
-				paramsGetter:    rest.ChiNamedURLParamsGetter,
-			},
-			wantResponse: &handlerwrap.Response{
-				HTTPStatusCode: http.StatusOK,
-			},
-		},
-		{
-			name: "returns 400 if passing a invalid param user_uuid",
-			args: args{
-				userUUID:     "x",
-				paramsGetter: rest.ChiNamedURLParamsGetter,
-			},
-			wantErrorResponse: handlerwrap.ParsingParamError{
-				Name:  urlParamUserUUID,
-				Value: "x",
-			}.ToErrorResponse(),
-		},
-		{
-			name: "returns 400 if passing a invalid param uuid",
-			args: args{
-				userUUID:        "b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5",
-				paymentPlanUUID: "x",
-				paramsGetter:    rest.ChiNamedURLParamsGetter,
-			},
-			wantErrorResponse: handlerwrap.ParsingParamError{
-				Name:  urlParamUserUUID,
-				Value: "x",
-			}.ToErrorResponse(),
-		},
-	}
-
-	for _, tt := range tests {
-		tt := tt
-
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
-			req := httptest.NewRequest("POST", "/", nil)
-			setURLParams(req, map[string]string{
-				urlParamUserUUID:    tt.args.userUUID,
-				urlParamPaymentUUID: tt.args.paymentPlanUUID,
-			})
-
-			resp, errRsp := cancelPaymentPlanHandler(tt.args.paramsGetter)(req)
-			if tt.wantErrorResponse != nil {
-				if errRsp.HTTPStatusCode != tt.wantErrorResponse.HTTPStatusCode {
-					t.Errorf("returned unexpected HTTP status code: got %v want %v",
-						errRsp.HTTPStatusCode, tt.wantErrorResponse.HTTPStatusCode)
-				}
-
-				if errRsp.ErrorCode != tt.wantErrorResponse.ErrorCode {
-					t.Errorf("returned unexpected error code: got %v want %v",
-						errRsp.ErrorCode, tt.wantErrorResponse.ErrorCode)
-				}
-
-				return
-			}
-
-			if !reflect.DeepEqual(resp, tt.wantResponse) {
-				t.Errorf("returned unexpected response: got %v want %v", resp, tt.wantResponse)
-			}
-		})
-	}
-}
-
-func Benchmark_cancelPaymentPlanHandler(b *testing.B) {
-	req := httptest.NewRequest("POST", "/", nil)
-	setURLParams(req, map[string]string{
-		urlParamUserUUID:    "b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5",
-		urlParamPaymentUUID: "b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5",
-	})
-
-	h := cancelPaymentPlanHandler(rest.ChiNamedURLParamsGetter)
 
 	b.ResetTimer()
 
@@ -443,8 +380,8 @@ func Test_completePaymentPlanHandler(t *testing.T) {
 	paymentService := servicemock.NewMockPaymentPlanService(gomock.NewController(t))
 	req := httptest.NewRequest("POST", "/", nil)
 	setURLParams(req, map[string]string{
-		urlParamUserUUID:    userUUID.String(),
 		urlParamPaymentUUID: paymentPlanID.String(),
+		urlParamUserUUID:    userUUID.String(),
 	})
 
 	gomock.InOrder(
@@ -469,7 +406,7 @@ func Test_completePaymentPlanHandlerParamsError(t *testing.T) {
 	t.Parallel()
 
 	type args struct {
-		userUUID        string
+		userUUID        uuid.UUID
 		paymentPlanUUID string
 		paramsGetter    handlerwrap.NamedURLParamsGetter
 	}
@@ -481,10 +418,10 @@ func Test_completePaymentPlanHandlerParamsError(t *testing.T) {
 		wantErrorResponse *handlerwrap.ErrorResponse
 	}{
 		{
-			name: "returns 400 if passing a invalid param user_uuid",
+			name: "returns 400 if passing a invalid param uuid",
 			args: args{
-				userUUID:        "x",
-				paymentPlanUUID: uuid.New().String(),
+				userUUID:        uuid.New(),
+				paymentPlanUUID: "x",
 				paramsGetter:    rest.ChiNamedURLParamsGetter,
 			},
 			wantErrorResponse: &handlerwrap.ErrorResponse{HTTPStatusCode: http.StatusBadRequest},
@@ -492,9 +429,11 @@ func Test_completePaymentPlanHandlerParamsError(t *testing.T) {
 		{
 			name: "returns 400 if passing a invalid param uuid",
 			args: args{
-				userUUID:        uuid.New().String(),
+				userUUID:        uuid.New(),
 				paymentPlanUUID: "x",
-				paramsGetter:    rest.ChiNamedURLParamsGetter,
+				paramsGetter: func(ctx context.Context, key string) (string, *handlerwrap.ErrorResponse) {
+					return "", handlerwrap.MissingParamError{Name: key}.ToErrorResponse()
+				},
 			},
 			wantErrorResponse: &handlerwrap.ErrorResponse{HTTPStatusCode: http.StatusBadRequest},
 		},
@@ -511,8 +450,8 @@ func Test_completePaymentPlanHandlerParamsError(t *testing.T) {
 
 			req := httptest.NewRequest("POST", "/", nil)
 			setURLParams(req, map[string]string{
-				urlParamUserUUID:    tt.args.userUUID,
 				urlParamPaymentUUID: tt.args.paymentPlanUUID,
+				urlParamUserUUID:    tt.args.userUUID.String(),
 			})
 
 			resp, errRsp := completePaymentPlanHandler(tt.args.paramsGetter, paymentService)(req)
@@ -574,8 +513,8 @@ func Test_completePaymentPlanHandlerServiceError(t *testing.T) {
 
 			req := httptest.NewRequest("POST", "/", nil)
 			setURLParams(req, map[string]string{
-				urlParamUserUUID:    userUUID.String(),
 				urlParamPaymentUUID: paymentPlanID.String(),
+				urlParamUserUUID:    userUUID.String(),
 			})
 
 			resp, errRsp := completePaymentPlanHandler(paramsGetter, paymentService)(req)
@@ -599,84 +538,6 @@ func Benchmark_completePaymentPlanHandler(b *testing.B) {
 
 	paymentService := service.NewPaymentPlanService()
 	h := completePaymentPlanHandler(rest.ChiNamedURLParamsGetter, paymentService)
-
-	b.ResetTimer()
-
-	for n := 0; n < b.N; n++ {
-		_, _ = h(req)
-	}
-}
-
-func Test_refundHandler(t *testing.T) {
-	t.Parallel()
-
-	type args struct {
-		reqBody io.Reader
-	}
-
-	tests := []struct {
-		name              string
-		args              args
-		wantResponse      *handlerwrap.Response
-		wantErrorResponse *handlerwrap.ErrorResponse
-	}{
-		{
-			name: "happy path",
-			args: args{
-				reqBody: strings.NewReader(`{}`),
-			},
-			wantResponse: &handlerwrap.Response{
-				HTTPStatusCode: http.StatusOK,
-			},
-		},
-		{
-			name: "returns 400 if passing a broken reqBody",
-			args: args{
-				reqBody: readerFunc(func(p []byte) (int, error) {
-					return 0, errors.New("failed")
-				}),
-			},
-			wantErrorResponse: &handlerwrap.ErrorResponse{HTTPStatusCode: http.StatusBadRequest},
-		},
-
-		{
-			name: "returns 400 if passing a invalid reqBody",
-			args: args{
-				reqBody: strings.NewReader(`{x}`),
-			},
-			wantErrorResponse: &handlerwrap.ErrorResponse{HTTPStatusCode: http.StatusBadRequest},
-		},
-	}
-
-	for _, tt := range tests {
-		tt := tt
-
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
-			req := httptest.NewRequest("POST", "/", tt.args.reqBody)
-
-			resp, errRsp := refundHandler()(req)
-			if tt.wantErrorResponse != nil {
-				if errRsp.HTTPStatusCode != tt.wantErrorResponse.HTTPStatusCode {
-					t.Errorf("returned unexpected HTTP status code: got %v want %v", errRsp.HTTPStatusCode, tt.wantErrorResponse.HTTPStatusCode)
-				}
-
-				return
-			}
-
-			if !reflect.DeepEqual(resp, tt.wantResponse) {
-				t.Errorf("returned unexpected response: got %v want %v", resp, tt.wantResponse)
-			}
-		})
-	}
-}
-
-func Benchmark_refundHandler(b *testing.B) {
-	req := httptest.NewRequest("POST", "/", nil)
-	setURLParams(req, map[string]string{urlParamUserUUID: "b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5"})
-
-	h := refundHandler()
 
 	b.ResetTimer()
 

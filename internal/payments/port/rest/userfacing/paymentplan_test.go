@@ -1,7 +1,6 @@
 package userfacing
 
 import (
-	"context"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -58,34 +57,30 @@ func Test_listPaymentPlansHandler_SuccessCase(t *testing.T) {
 
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			t.Run(tt.name, func(t *testing.T) {
-				t.Parallel()
 
-				mockCtrl := gomock.NewController(t)
-				paymentService := servicemock.NewMockPaymentPlanService(mockCtrl)
+			mockCtrl := gomock.NewController(t)
+			paymentService := servicemock.NewMockPaymentPlanService(mockCtrl)
 
-				gomock.InOrder(
-					paymentService.EXPECT().GetPaymentPlanByUserID(gomock.Any(), userID).
-						Return(expectedResult, nil).AnyTimes(),
-				)
+			gomock.InOrder(
+				paymentService.EXPECT().GetPaymentPlanByUserID(gomock.Any(), userID).
+					Return(expectedResult, nil).AnyTimes(),
+			)
 
-				req := httptest.NewRequest("GET", "/?"+tt.query, nil)
+			req := httptest.NewRequest("GET", "/?"+tt.query, nil)
+			req = req.WithContext(rest.SetUserUUID(req.Context(), &userID))
 
-				req = req.WithContext(context.WithValue(req.Context(), contextValKeyUserUUID, &userID))
-
-				resp, err := listPaymentPlansHandler(paymentService)(req)
-				if tt.expectedErrorResponse != nil {
-					if err.HTTPStatusCode != tt.expectedErrorResponse.HTTPStatusCode {
-						t.Errorf("returned a unexpected error code got %v want %v", err.HTTPStatusCode, tt.expectedErrorResponse.HTTPStatusCode)
-					}
-
-					return
+			resp, err := listPaymentPlansHandler(paymentService)(req)
+			if tt.expectedErrorResponse != nil {
+				if err.HTTPStatusCode != tt.expectedErrorResponse.HTTPStatusCode {
+					t.Errorf("returned a unexpected error code got %v want %v", err.HTTPStatusCode, tt.expectedErrorResponse.HTTPStatusCode)
 				}
 
-				if !reflect.DeepEqual(resp, tt.expectedResponse) {
-					t.Errorf("returned a unexpected response got %#v want %#v", resp, tt.expectedResponse)
-				}
-			})
+				return
+			}
+
+			if !reflect.DeepEqual(resp, tt.expectedResponse) {
+				t.Errorf("returned a unexpected response got %#v want %#v", resp, tt.expectedResponse)
+			}
 		})
 	}
 }
@@ -116,26 +111,23 @@ func Test_listPaymentPlansHandler_ParamsError(t *testing.T) {
 
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			t.Run(tt.name, func(t *testing.T) {
-				t.Parallel()
 
-				req := httptest.NewRequest("GET", "/?"+tt.query, nil)
+			req := httptest.NewRequest("GET", "/?"+tt.query, nil)
 
-				req = req.WithContext(context.WithValue(req.Context(), contextValKeyUserUUID, &userID))
+			req = req.WithContext(rest.SetUserUUID(req.Context(), &userID))
 
-				resp, err := listPaymentPlansHandler(paymentService)(req)
-				if tt.expectedErrorResponse != nil {
-					if err.HTTPStatusCode != tt.expectedErrorResponse.HTTPStatusCode {
-						t.Errorf("returned a unexpected error code got %v want %v", err.HTTPStatusCode, tt.expectedErrorResponse.HTTPStatusCode)
-					}
-
-					return
+			resp, err := listPaymentPlansHandler(paymentService)(req)
+			if tt.expectedErrorResponse != nil {
+				if err.HTTPStatusCode != tt.expectedErrorResponse.HTTPStatusCode {
+					t.Errorf("returned a unexpected error code got %v want %v", err.HTTPStatusCode, tt.expectedErrorResponse.HTTPStatusCode)
 				}
 
-				if !reflect.DeepEqual(resp, tt.expectedResponse) {
-					t.Errorf("returned a unexpected response got %#v want %#v", resp, tt.expectedResponse)
-				}
-			})
+				return
+			}
+
+			if !reflect.DeepEqual(resp, tt.expectedResponse) {
+				t.Errorf("returned a unexpected response got %#v want %#v", resp, tt.expectedResponse)
+			}
 		})
 	}
 }
@@ -177,7 +169,7 @@ func Test_listPaymentPlansHandler_InternalError(t *testing.T) {
 
 				req := httptest.NewRequest("GET", "/", nil)
 
-				req = req.WithContext(context.WithValue(req.Context(), contextValKeyUserUUID, &userID))
+				req = req.WithContext(rest.SetUserUUID(req.Context(), &userID))
 
 				resp, err := listPaymentPlansHandler(paymentService)(req)
 				if resp != nil {
@@ -201,7 +193,7 @@ func Test_listPaymentPlansHandler_MissingUserID(t *testing.T) {
 	req := httptest.NewRequest("GET", "/", nil)
 
 	_, err := listPaymentPlansHandler(paymentService)(req)
-	if err != nil && err.HTTPStatusCode != http.StatusUnauthorized {
+	if err != nil && err != rest.ErrUserIDNotFound {
 		t.Errorf("unexpected status code expect: %v, actual: %v", err.ErrorCode, http.StatusBadRequest)
 	}
 }

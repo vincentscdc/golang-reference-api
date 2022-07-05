@@ -14,14 +14,9 @@ func AddRoutes(
 	paymentService service.PaymentPlanService,
 ) {
 	router.Route("/api/internal/pay_later/", func(rtr chi.Router) {
-		rtr.Get("/user/{user_uuid}/credit_line",
-			handlerwrap.Wrapper(log, getCreditLineHandler(paramsGetter)))
-		rtr.Post("/user/{user_uuid}/payment_plans",
+		rtr.Post("/users/{user_uuid}/payment_plans",
 			handlerwrap.Wrapper(log, createPendingPaymentPlanHandler(paramsGetter, paymentService)))
-		rtr.Post("/user/{user_uuid}/payment_plans/{payment_uuid}/cancel",
-			handlerwrap.Wrapper(log, cancelPaymentPlanHandler(paramsGetter)))
-		rtr.Post("/user/{user_uuid}/payment_plans/{payment_uuid}/installments/{installments_id}/payment",
+		rtr.Post("/users/{user_uuid}/payment_plans/{payment_uuid}/complete",
 			handlerwrap.Wrapper(log, completePaymentPlanHandler(paramsGetter, paymentService)))
-		rtr.Post("/refund", handlerwrap.Wrapper(log, refundHandler()))
 	})
 }
