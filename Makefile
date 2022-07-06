@@ -92,9 +92,16 @@ docker-build-ci: ## docker build, works only in the cloud
 		--progress=plain \
 		./
 
+GITHUB_SECRET_FILE=.github_personal_access_token
+
 docker-build-local: ## docker build locally, works on m1 macs
-	@printf "what is your github username: "; read -r GITHUB_USER && \
-	printf "what is your github personal access token: "; read -rs GITHUB_PERSONAL_ACCESS_TOKEN && \
+	@read -r GITHUB_USER GITHUB_PERSONAL_ACCESS_TOKEN <<< $$(cat $(GITHUB_SECRET_FILE) 2>/dev/null) && \
+		if [[ -z "$$GITHUB_USER" || -z "$$GITHUB_PERSONAL_ACCESS_TOKEN" ]]; then \
+			read -p "what is your github username: "  -r GITHUB_USER; \
+			read -p "what is your github personal access token: " -rs GITHUB_PERSONAL_ACCESS_TOKEN; \
+			echo "$$GITHUB_USER $$GITHUB_PERSONAL_ACCESS_TOKEN" > $(GITHUB_SECRET_FILE); \
+			printf "\nYour Github username and personal access token are saved in the \033[0;31m$(GITHUB_SECRET_FILE)\033[0m file.\n"; \
+		fi && \
 	docker build \
 		-f Dockerfile.local \
 		-t $(APP_NAME) \
