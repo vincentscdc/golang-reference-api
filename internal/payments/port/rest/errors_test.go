@@ -40,10 +40,10 @@ func TestServiceErrorToErrorResp(t *testing.T) {
 			t.Parallel()
 
 			errResp := ServiceErrorToErrorResp(tt.err)
-			if errResp.HTTPStatusCode != tt.statusCode {
+			if errResp.StatusCode != tt.statusCode {
 				t.Errorf("unexpected status code, expected: %v, actual: %v",
 					tt.statusCode,
-					errResp.HTTPStatusCode,
+					errResp.StatusCode,
 				)
 			}
 		})

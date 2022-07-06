@@ -33,9 +33,9 @@ func TestChiNamedURLParamsGetter(t *testing.T) {
 	_, err = ChiNamedURLParamsGetter(ctx, "unknown_key")
 	if err == nil {
 		t.Errorf("unexpected nil error")
-	} else if err.HTTPStatusCode != http.StatusBadRequest {
+	} else if err.StatusCode != http.StatusBadRequest {
 		t.Errorf(
-			"expected: %v, actual: %v", err.HTTPStatusCode, http.StatusBadRequest,
+			"expected: %v, actual: %v", err.StatusCode, http.StatusBadRequest,
 		)
 	}
 }

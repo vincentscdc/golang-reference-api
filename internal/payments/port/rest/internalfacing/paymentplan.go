@@ -67,8 +67,8 @@ func createPendingPaymentPlanHandler(
 		}
 
 		return &handlerwrap.Response{
-			Body:           resp,
-			HTTPStatusCode: http.StatusOK,
+			Body:       resp,
+			StatusCode: http.StatusOK,
 		}, nil
 	}
 }
@@ -114,8 +114,8 @@ func completePaymentPlanHandler(
 		}
 
 		return &handlerwrap.Response{
-			Body:           CompletePaymentPlanResponse{Payment: *payment},
-			HTTPStatusCode: http.StatusOK,
+			Body:       CompletePaymentPlanResponse{Payment: *payment},
+			StatusCode: http.StatusOK,
 		}, nil
 	}
 }

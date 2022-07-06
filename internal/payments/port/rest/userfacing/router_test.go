@@ -5,8 +5,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/monacohq/golang-common/transport/http/middleware/cryptouseruuid"
+
 	"golangreferenceapi/internal/payments/mock/servicemock"
-	"golangreferenceapi/internal/payments/port/rest"
 	"golangreferenceapi/internal/payments/service"
 
 	"github.com/go-chi/chi/v5"
@@ -67,5 +68,5 @@ func TestAddRoutes(t *testing.T) {
 }
 
 func setRequestHeaderUserID(r *http.Request, uuid string) {
-	r.Header.Set(rest.HTTPHeaderKeyUserUUID, uuid)
+	r.Header.Set(cryptouseruuid.HTTPHeaderKeyUserUUID, uuid)
 }

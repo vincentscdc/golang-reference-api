@@ -48,7 +48,7 @@ func Test_createPendingPaymentPlanHandlerInputError(t *testing.T) {
 				}),
 				paramsGetter: rest.ChiNamedURLParamsGetter,
 			},
-			wantErrorResponse: &handlerwrap.ErrorResponse{HTTPStatusCode: http.StatusBadRequest},
+			wantErrorResponse: &handlerwrap.ErrorResponse{StatusCode: http.StatusBadRequest},
 		},
 		{
 			name: "returns 400 if passing a invalid body",
@@ -57,7 +57,7 @@ func Test_createPendingPaymentPlanHandlerInputError(t *testing.T) {
 				reqBody:      strings.NewReader(`{x}`),
 				paramsGetter: rest.ChiNamedURLParamsGetter,
 			},
-			wantErrorResponse: &handlerwrap.ErrorResponse{HTTPStatusCode: http.StatusBadRequest},
+			wantErrorResponse: &handlerwrap.ErrorResponse{StatusCode: http.StatusBadRequest},
 		},
 	}
 
@@ -76,8 +76,8 @@ func Test_createPendingPaymentPlanHandlerInputError(t *testing.T) {
 
 			_, errRsp := createPendingPaymentPlanHandler(tt.args.paramsGetter, paymentService)(req)
 			if errRsp != nil {
-				if errRsp.HTTPStatusCode != tt.wantErrorResponse.HTTPStatusCode {
-					t.Errorf("returned unexpected HTTP status code: got %v want %v", errRsp.HTTPStatusCode, tt.wantErrorResponse.HTTPStatusCode)
+				if errRsp.StatusCode != tt.wantErrorResponse.StatusCode {
+					t.Errorf("returned unexpected HTTP status code: got %v want %v", errRsp.StatusCode, tt.wantErrorResponse.StatusCode)
 				}
 
 				return
@@ -172,8 +172,8 @@ func Test_createPendingPaymentPlanHandler(t *testing.T) {
 		}
 		paramsGetter = rest.ChiNamedURLParamsGetter
 		wantResponse = &handlerwrap.Response{
-			HTTPStatusCode: http.StatusOK,
-			Body:           response,
+			StatusCode: http.StatusOK,
+			Body:       response,
 		}
 	)
 
@@ -198,7 +198,7 @@ func Test_createPendingPaymentPlanHandler(t *testing.T) {
 
 	resp, errRsp := createPendingPaymentPlanHandler(paramsGetter, paymentService)(req)
 	if errRsp != nil {
-		t.Errorf("returned unexpected error code: %v, err: %v", errRsp.HTTPStatusCode, errRsp.Error.Error())
+		t.Errorf("returned unexpected error code: %v, err: %v", errRsp.StatusCode, errRsp.Error.Error())
 	}
 
 	pendingPlanExpect, ok := wantResponse.Body.(CreatePendingPaymentPlanResponse)
@@ -376,8 +376,8 @@ func Test_completePaymentPlanHandler(t *testing.T) {
 			Installments: nil,
 		}
 		wantResponse = &handlerwrap.Response{
-			HTTPStatusCode: http.StatusOK,
-			Body:           CompletePaymentPlanResponse{Payment: payment},
+			StatusCode: http.StatusOK,
+			Body:       CompletePaymentPlanResponse{Payment: payment},
 		}
 	)
 
@@ -430,7 +430,7 @@ func Test_completePaymentPlanHandlerParamsError(t *testing.T) {
 				paymentPlanUUID: "x",
 				paramsGetter:    rest.ChiNamedURLParamsGetter,
 			},
-			wantErrorResponse: &handlerwrap.ErrorResponse{HTTPStatusCode: http.StatusBadRequest},
+			wantErrorResponse: &handlerwrap.ErrorResponse{StatusCode: http.StatusBadRequest},
 		},
 		{
 			name: "returns 400 if passing a invalid param uuid",
@@ -441,7 +441,7 @@ func Test_completePaymentPlanHandlerParamsError(t *testing.T) {
 					return "", handlerwrap.MissingParamError{Name: key}.ToErrorResponse()
 				},
 			},
-			wantErrorResponse: &handlerwrap.ErrorResponse{HTTPStatusCode: http.StatusBadRequest},
+			wantErrorResponse: &handlerwrap.ErrorResponse{StatusCode: http.StatusBadRequest},
 		},
 	}
 
@@ -462,9 +462,9 @@ func Test_completePaymentPlanHandlerParamsError(t *testing.T) {
 
 			resp, errRsp := completePaymentPlanHandler(tt.args.paramsGetter, paymentService)(req)
 			if tt.wantErrorResponse != nil {
-				if errRsp.HTTPStatusCode != tt.wantErrorResponse.HTTPStatusCode {
+				if errRsp.StatusCode != tt.wantErrorResponse.StatusCode {
 					t.Errorf("returned unexpected HTTP status code: got %v want %v",
-						errRsp.HTTPStatusCode, tt.wantErrorResponse.HTTPStatusCode)
+						errRsp.StatusCode, tt.wantErrorResponse.StatusCode)
 				}
 
 				return

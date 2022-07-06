@@ -1,11 +1,14 @@
 package userfacing
 
 import (
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
 	"testing"
 	"time"
+
+	"github.com/monacohq/golang-common/transport/http/middleware/cryptouseruuid"
 
 	"golangreferenceapi/internal/payments/common"
 	"golangreferenceapi/internal/payments/mock/servicemock"
@@ -47,8 +50,8 @@ func Test_listPaymentPlansHandler_SuccessCase(t *testing.T) {
 			name:  "happy path",
 			query: "offset=0&limit=10&created_at_order=desc",
 			expectedResponse: &handlerwrap.Response{
-				Body:           resultBody,
-				HTTPStatusCode: http.StatusOK,
+				Body:       resultBody,
+				StatusCode: http.StatusOK,
 			},
 		},
 	}
@@ -68,12 +71,12 @@ func Test_listPaymentPlansHandler_SuccessCase(t *testing.T) {
 			)
 
 			req := httptest.NewRequest("GET", "/?"+tt.query, nil)
-			req = req.WithContext(rest.SetUserUUID(req.Context(), &userID))
+			req = req.WithContext(cryptouseruuid.SetUserUUID(req.Context(), &userID))
 
 			resp, err := listPaymentPlansHandler(paymentService)(req)
 			if tt.expectedErrorResponse != nil {
-				if err.HTTPStatusCode != tt.expectedErrorResponse.HTTPStatusCode {
-					t.Errorf("returned a unexpected error code got %v want %v", err.HTTPStatusCode, tt.expectedErrorResponse.HTTPStatusCode)
+				if err.StatusCode != tt.expectedErrorResponse.StatusCode {
+					t.Errorf("returned a unexpected error code got %v want %v", err.StatusCode, tt.expectedErrorResponse.StatusCode)
 				}
 
 				return
@@ -115,12 +118,12 @@ func Test_listPaymentPlansHandler_ParamsError(t *testing.T) {
 
 			req := httptest.NewRequest("GET", "/?"+tt.query, nil)
 
-			req = req.WithContext(rest.SetUserUUID(req.Context(), &userID))
+			req = req.WithContext(cryptouseruuid.SetUserUUID(req.Context(), &userID))
 
 			resp, err := listPaymentPlansHandler(paymentService)(req)
 			if tt.expectedErrorResponse != nil {
-				if err.HTTPStatusCode != tt.expectedErrorResponse.HTTPStatusCode {
-					t.Errorf("returned a unexpected error code got %v want %v", err.HTTPStatusCode, tt.expectedErrorResponse.HTTPStatusCode)
+				if err.StatusCode != tt.expectedErrorResponse.StatusCode {
+					t.Errorf("returned a unexpected error code got %v want %v", err.StatusCode, tt.expectedErrorResponse.StatusCode)
 				}
 
 				return
@@ -171,7 +174,7 @@ func Test_listPaymentPlansHandler_InternalError(t *testing.T) {
 
 				req := httptest.NewRequest("GET", "/", nil)
 
-				req = req.WithContext(rest.SetUserUUID(req.Context(), &userID))
+				req = req.WithContext(cryptouseruuid.SetUserUUID(req.Context(), &userID))
 
 				resp, err := listPaymentPlansHandler(paymentService)(req)
 				if resp != nil {
@@ -195,7 +198,7 @@ func Test_listPaymentPlansHandler_MissingUserID(t *testing.T) {
 	req := httptest.NewRequest("GET", "/", nil)
 
 	_, err := listPaymentPlansHandler(paymentService)(req)
-	if err != nil && err != rest.ErrUserIDNotFound {
+	if err != nil && !errors.As(err.Error, &cryptouseruuid.UserIDNotFoundError{}) {
 		t.Errorf("unexpected status code expect: %v, actual: %v", err.ErrorCode, http.StatusBadRequest)
 	}
 }

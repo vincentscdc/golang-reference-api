@@ -1,11 +1,11 @@
 package userfacing
 
 import (
-	"golangreferenceapi/internal/payments/port/rest"
 	"golangreferenceapi/internal/payments/service"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/monacohq/golang-common/transport/http/handlerwrap"
+	"github.com/monacohq/golang-common/transport/http/middleware/cryptouseruuid"
 	"github.com/rs/zerolog"
 )
 
@@ -17,7 +17,7 @@ func AddRoutes(
 	router chi.Router, log *zerolog.Logger, paymentService service.PaymentPlanService,
 ) {
 	router.Route("/api/pay_later/", func(r chi.Router) {
-		r.Use(rest.UserUUID(log))
+		r.Use(cryptouseruuid.UserUUID(log))
 		r.Get("/payment_plans", handlerwrap.Wrapper(log, listPaymentPlansHandlerOKStyle(log, paymentService)))
 	})
 }

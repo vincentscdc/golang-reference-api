@@ -32,11 +32,10 @@ import (
 
 // nolint: gochecknoglobals, nolintlint
 var (
-	testRefHost, testRefPort, testRefDatabaseURL string
-	testRefDockertestPool                        *dockertest.Pool
-	testRefDockertestResource                    *dockertest.Resource
-	testRefPoolConn                              *pgxpool.Pool
-	testRefRepo                                  *Repo
+	testRefDockertestPool     *dockertest.Pool
+	testRefDockertestResource *dockertest.Resource
+	testRefPoolConn           *pgxpool.Pool
+	testRefRepo               *Repo
 )
 
 func TestMain(m *testing.M) {
@@ -77,7 +76,7 @@ func TestMain(m *testing.M) {
 
 	_ = testRefDockertestResource.Expire(180)
 
-	testRefDatabaseURL = fmt.Sprintf("postgres://postgres:%s@%s/datawarehouse?sslmode=disable", "postgres", getHostPort(testRefDockertestResource, "5432/tcp"))
+	testRefDatabaseURL := fmt.Sprintf("postgres://postgres:%s@%s/datawarehouse?sslmode=disable", "postgres", getHostPort(testRefDockertestResource, "5432/tcp"))
 
 	if err = testRefDockertestPool.Retry(func() error {
 		var poolErr error
@@ -574,8 +573,8 @@ func getHostPort(resource *dockertest.Resource, id string) string {
 	if dockerURL == "" {
 		hostAndPort := resource.GetHostPort("5432/tcp")
 		hp := strings.Split(hostAndPort, ":")
-		testRefHost = hp[0]
-		testRefPort = hp[1]
+		testRefHost := hp[0]
+		testRefPort := hp[1]
 
 		return testRefHost + ":" + testRefPort
 	}
@@ -584,9 +583,6 @@ func getHostPort(resource *dockertest.Resource, id string) string {
 	if err != nil {
 		panic(err)
 	}
-
-	testRefHost = u.Hostname()
-	testRefPort = resource.GetPort(id)
 
 	return u.Hostname() + ":" + resource.GetPort(id)
 }

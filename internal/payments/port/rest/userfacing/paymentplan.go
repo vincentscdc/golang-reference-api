@@ -3,6 +3,8 @@ package userfacing
 import (
 	"net/http"
 
+	"github.com/monacohq/golang-common/transport/http/middleware/cryptouseruuid"
+
 	"golangreferenceapi/internal/payments/port/rest"
 
 	"golangreferenceapi/internal/payments/service"
@@ -30,14 +32,14 @@ type Installments struct {
 func listPaymentPlansHandler(paymentService service.PaymentPlanService) handlerwrap.TypedHandler {
 	return func(req *http.Request) (*handlerwrap.Response, *handlerwrap.ErrorResponse) {
 		// user uuid
-		uid, err := rest.GetUserUUID(req.Context())
+		uid, err := cryptouseruuid.GetUserUUID(req.Context())
 		if err != nil {
-			return nil, err
+			return nil, handlerwrap.NewErrorResponseFromCryptoUserUUIDError(err)
 		}
 		// pagination params
-		_, err = rest.ParsePaginationURLQuery(req.URL, paymentPlansDefaultLimit, rest.PaymentPlansCreatedAtOrderDESC)
-		if err != nil {
-			return nil, err
+		_, paginateErr := rest.ParsePaginationURLQuery(req.URL, paymentPlansDefaultLimit, rest.PaymentPlansCreatedAtOrderDESC)
+		if paginateErr != nil {
+			return nil, paginateErr
 		}
 
 		paymentPlans, serviceErr := paymentService.GetPaymentPlanByUserID(req.Context(), *uid)
@@ -45,7 +47,7 @@ func listPaymentPlansHandler(paymentService service.PaymentPlanService) handlerw
 			return nil, rest.ServiceErrorToErrorResp(serviceErr)
 		}
 
-		resp := &handlerwrap.Response{Body: PaymentPlanResponse{Payments: paymentPlans}, HTTPStatusCode: http.StatusOK}
+		resp := &handlerwrap.Response{Body: PaymentPlanResponse{Payments: paymentPlans}, StatusCode: http.StatusOK}
 
 		return resp, nil
 	}

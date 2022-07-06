@@ -33,8 +33,8 @@ func TestOKStyleWrapper(t *testing.T) {
 				dataName: "foo",
 				handler: func(r *http.Request) (*handlerwrap.Response, *handlerwrap.ErrorResponse) {
 					return &handlerwrap.Response{
-						Body:           map[string]any{"bar": "bar"},
-						HTTPStatusCode: http.StatusCreated,
+						Body:       map[string]any{"bar": "bar"},
+						StatusCode: http.StatusCreated,
 					}, nil
 				},
 			},
@@ -47,13 +47,13 @@ func TestOKStyleWrapper(t *testing.T) {
 				dataName: "foo",
 				handler: func(r *http.Request) (*handlerwrap.Response, *handlerwrap.ErrorResponse) {
 					return &handlerwrap.Response{
-							Body:           map[string]any{"bar": "bar"},
-							HTTPStatusCode: http.StatusBadRequest,
+							Body:       map[string]any{"bar": "bar"},
+							StatusCode: http.StatusBadRequest,
 						}, &handlerwrap.ErrorResponse{
-							Error:          errors.New("bad request"),
-							HTTPStatusCode: http.StatusBadRequest,
-							ErrorCode:      "bad_request",
-							ErrorMsg:       "bad request",
+							Error:      errors.New("bad request"),
+							StatusCode: http.StatusBadRequest,
+							ErrorCode:  "bad_request",
+							ErrorMsg:   "bad request",
 						}
 				},
 			},
@@ -79,9 +79,9 @@ func TestOKStyleWrapper(t *testing.T) {
 			if msg := strings.TrimSpace(logBuffer.String()); msg != tt.logMsg {
 				t.Errorf("handler loged a wrong message, got %v want %v", msg, tt.logMsg)
 			}
-			if resp.HTTPStatusCode != http.StatusOK {
+			if resp.StatusCode != http.StatusOK {
 				t.Errorf("handler returned wrong status code, got %v want %v",
-					http.StatusOK, resp.HTTPStatusCode)
+					http.StatusOK, resp.StatusCode)
 			}
 			respJSON, _ := json.Marshal(resp.Body)
 			if string(respJSON) != tt.responseBody {

@@ -24,7 +24,7 @@ func OKStyleWrapper(log *zerolog.Logger, bodyName string, handler handlerwrap.Ty
 					"ok":     true,
 					bodyName: resp.Body,
 				},
-				HTTPStatusCode: http.StatusOK,
+				StatusCode: http.StatusOK,
 			}, nil
 		}
 
@@ -32,7 +32,7 @@ func OKStyleWrapper(log *zerolog.Logger, bodyName string, handler handlerwrap.Ty
 		log.Error().
 			Err(err.Error).
 			Str("ErrorCode", err.ErrorCode).
-			Int("HTTPStatusCode", err.HTTPStatusCode).
+			Int("HTTPStatusCode", err.StatusCode).
 			Msg(err.ErrorMsg)
 
 		response := &handlerwrap.Response{
@@ -41,7 +41,7 @@ func OKStyleWrapper(log *zerolog.Logger, bodyName string, handler handlerwrap.Ty
 				"error":         err.ErrorCode,
 				"error_message": err.ErrorMsg,
 			},
-			HTTPStatusCode: http.StatusOK,
+			StatusCode: http.StatusOK,
 		}
 
 		return response, nil
