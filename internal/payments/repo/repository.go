@@ -5,7 +5,7 @@ import (
 
 	"golangreferenceapi/internal/payments"
 
-	"github.com/google/uuid"
+	"github.com/gofrs/uuid"
 )
 
 //go:generate mockgen -source=./repository.go -destination=../mock/repomock/mockrepository.go -package=repomock

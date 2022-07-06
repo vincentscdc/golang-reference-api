@@ -6,7 +6,7 @@ import (
 	"golangreferenceapi/internal/db"
 	"golangreferenceapi/internal/payments"
 
-	"github.com/google/uuid"
+	"github.com/gofrs/uuid"
 )
 
 type Repo struct {
@@ -18,8 +18,13 @@ func NewSQLCRepository(querier db.Querier) *Repo {
 }
 
 func (impl *Repo) CreatePaymentPlan(ctx context.Context, arg *payments.CreatePlanParams) (*payments.Plan, error) {
+	planID, err := uuid.NewV4()
+	if err != nil {
+		return nil, err
+	}
+
 	dbEntity, err := impl.querier.CreatePaymentPlan(ctx, &db.CreatePaymentPlanParams{
-		ID:       uuid.New(),
+		ID:       planID,
 		UserID:   arg.UserID,
 		Currency: db.Currency(arg.Currency),
 		Amount:   arg.Amount,
@@ -61,8 +66,13 @@ func (impl *Repo) CreatePaymentInstallment(
 	ctx context.Context,
 	arg *payments.CreateInstallmentParams,
 ) (*payments.Installment, error) {
+	installmentID, err := uuid.NewV4()
+	if err != nil {
+		return nil, err
+	}
+
 	dbEntity, err := impl.querier.CreatePaymentInstallments(ctx, &db.CreatePaymentInstallmentsParams{
-		ID:            uuid.New(),
+		ID:            installmentID,
 		PaymentPlanID: arg.PaymentPlanID,
 		Currency:      db.Currency(arg.Currency),
 		Amount:        arg.Amount,

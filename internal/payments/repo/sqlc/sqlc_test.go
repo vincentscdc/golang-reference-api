@@ -17,11 +17,11 @@ import (
 	"golangreferenceapi/internal/db"
 	"golangreferenceapi/internal/payments"
 
+	"github.com/gofrs/uuid"
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	"github.com/golang-migrate/migrate/v4/source/iofs"
 	"github.com/golang/mock/gomock"
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/ory/dockertest/v3"
@@ -235,8 +235,9 @@ func TestSQLCRepo_ListPaymentPlansByUserID(t *testing.T) {
 		t.Fatalf("Failed to run migrations: %s", err)
 	}
 
+	userUUID := uuid.Must(uuid.NewV4())
+
 	querier := db.New(dbConn)
-	userUUID := uuid.New()
 	makeMockQuerier := func(result []*db.ListPaymentPlansByUserIDRow, err error) db.Querier {
 		mockedQuerier := db.NewMockQuerier(ctrl)
 		mockedQuerier.EXPECT().ListPaymentPlansByUserID(gomock.Any(), gomock.Any()).Return(result, err).AnyTimes()

@@ -7,7 +7,7 @@ import (
 
 	"github.com/monacohq/golang-common/transport/http/handlerwrap"
 
-	"github.com/google/uuid"
+	"github.com/gofrs/uuid"
 	"github.com/rs/zerolog"
 )
 
@@ -41,7 +41,7 @@ func UserUUID(log *zerolog.Logger) func(http.Handler) http.Handler {
 				return
 			}
 
-			userUUID, err := uuid.Parse(uuidVal)
+			userUUID, err := uuid.FromString(uuidVal)
 			if err != nil {
 				log.Error().
 					Err(err).

@@ -12,15 +12,16 @@ import (
 	"golangreferenceapi/internal/payments/port/rest"
 	"golangreferenceapi/internal/payments/service"
 
+	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	"github.com/google/uuid"
 	"github.com/monacohq/golang-common/transport/http/handlerwrap"
 )
 
 func Test_listPaymentPlansHandler_SuccessCase(t *testing.T) {
 	t.Parallel()
 
-	userID := uuid.New()
+	userID := uuid.Must(uuid.NewV4())
+	installmentID := uuid.Must(uuid.NewV4())
 	expectedResult := []service.PaymentPlans{{
 		ID:          userID.String(),
 		Currency:    "usdc",
@@ -28,7 +29,7 @@ func Test_listPaymentPlansHandler_SuccessCase(t *testing.T) {
 		Status:      "pending",
 		CreatedAt:   time.Now().Format(common.TimeFormat),
 		Installments: []service.PaymentPlanInstallment{{
-			ID:       uuid.New().String(),
+			ID:       installmentID.String(),
 			Amount:   "100",
 			Currency: "usdc",
 			DueAt:    time.Now().Format(common.TimeFormat),
@@ -88,7 +89,7 @@ func Test_listPaymentPlansHandler_SuccessCase(t *testing.T) {
 func Test_listPaymentPlansHandler_ParamsError(t *testing.T) {
 	t.Parallel()
 
-	userID := uuid.New()
+	userID := uuid.Must(uuid.NewV4())
 
 	tests := []struct {
 		name                  string
@@ -135,7 +136,8 @@ func Test_listPaymentPlansHandler_ParamsError(t *testing.T) {
 func Test_listPaymentPlansHandler_InternalError(t *testing.T) {
 	t.Parallel()
 
-	userID := uuid.New()
+	userID := uuid.Must(uuid.NewV4())
+
 	tests := []struct {
 		uid              uuid.UUID
 		name             string
@@ -143,7 +145,7 @@ func Test_listPaymentPlansHandler_InternalError(t *testing.T) {
 		err              error
 	}{
 		{
-			uid:  uuid.New(),
+			uid:  uuid.Must(uuid.NewV4()),
 			name: "function internal error",
 			err:  service.ErrRecordNotFound,
 		},

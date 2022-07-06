@@ -7,7 +7,7 @@ import (
 
 	"golangreferenceapi/internal/payments"
 
-	"github.com/google/uuid"
+	"github.com/gofrs/uuid"
 	"github.com/shopspring/decimal"
 )
 
@@ -15,7 +15,7 @@ import (
 var (
 	testBenchCtx                    = context.Background()
 	testBenchAmount, _              = decimal.NewFromString("10.98")
-	testBenchUserID                 = uuid.New()
+	testBenchUserID                 = uuid.Must(uuid.NewV4())
 	testBenchCreatePaymentPlanParam = &payments.CreatePlanParams{
 		UserID:   testBenchUserID,
 		Currency: "usdc",

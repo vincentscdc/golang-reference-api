@@ -10,8 +10,8 @@ import (
 	"golangreferenceapi/internal/payments/service"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 )
 
@@ -34,7 +34,7 @@ func TestAddRoutes(t *testing.T) {
 		},
 	}
 
-	userID := uuid.New()
+	userID := uuid.Must(uuid.NewV4())
 
 	paymentService := servicemock.NewMockPaymentPlanService(gomock.NewController(t))
 	paymentService.EXPECT().GetPaymentPlanByUserID(gomock.Any(), userID).Return([]service.PaymentPlans{}, nil)

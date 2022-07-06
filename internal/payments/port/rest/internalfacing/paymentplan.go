@@ -6,7 +6,7 @@ import (
 	"golangreferenceapi/internal/payments/port/rest"
 	"golangreferenceapi/internal/payments/service"
 
-	"github.com/google/uuid"
+	"github.com/gofrs/uuid"
 	"github.com/monacohq/golang-common/transport/http/handlerwrap"
 )
 

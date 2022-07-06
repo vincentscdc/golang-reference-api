@@ -9,8 +9,8 @@ import (
 	service "golangreferenceapi/internal/payments/service"
 	reflect "reflect"
 
+	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	uuid "github.com/google/uuid"
 )
 
 // MockPaymentPlanService is a mock of PaymentPlanService interface.

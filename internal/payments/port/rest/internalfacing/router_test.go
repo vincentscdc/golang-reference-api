@@ -8,8 +8,8 @@ import (
 	"testing"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 
 	"golangreferenceapi/internal/payments/mock/servicemock"
@@ -22,7 +22,7 @@ func TestAddRoutes(t *testing.T) {
 
 	log := zerolog.Nop().With().Logger()
 
-	userID := uuid.New()
+	userID := uuid.Must(uuid.NewV4())
 
 	tests := []struct {
 		name                   string

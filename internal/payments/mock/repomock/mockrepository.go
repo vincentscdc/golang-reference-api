@@ -9,8 +9,8 @@ import (
 	payments "golangreferenceapi/internal/payments"
 	reflect "reflect"
 
+	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	uuid "github.com/google/uuid"
 )
 
 // MockRepository is a mock of Repository interface.

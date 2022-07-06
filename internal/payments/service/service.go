@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/google/uuid"
+	"github.com/gofrs/uuid"
 )
 
 //go:generate mockgen -source=./service.go -destination=../mock/servicemock/service_mock.go -package=servicemock

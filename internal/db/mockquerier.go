@@ -8,8 +8,8 @@ import (
 	context "context"
 	reflect "reflect"
 
+	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
-	uuid "github.com/google/uuid"
 )
 
 // MockQuerier is a mock of Querier interface.

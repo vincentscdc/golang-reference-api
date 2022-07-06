@@ -13,8 +13,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	"github.com/google/uuid"
 	"github.com/monacohq/golang-common/transport/http/handlerwrap"
 
 	"golangreferenceapi/internal/payments/common"
@@ -25,6 +25,8 @@ import (
 
 func Test_createPendingPaymentPlanHandlerInputError(t *testing.T) {
 	t.Parallel()
+
+	userID := uuid.Must(uuid.NewV4())
 
 	type args struct {
 		userUUID     uuid.UUID
@@ -40,7 +42,7 @@ func Test_createPendingPaymentPlanHandlerInputError(t *testing.T) {
 		{
 			name: "returns 400 if passing a broken reqBody",
 			args: args{
-				userUUID: uuid.New(),
+				userUUID: userID,
 				reqBody: readerFunc(func(p []byte) (int, error) {
 					return 0, errors.New("failed")
 				}),
@@ -51,7 +53,7 @@ func Test_createPendingPaymentPlanHandlerInputError(t *testing.T) {
 		{
 			name: "returns 400 if passing a invalid body",
 			args: args{
-				userUUID:     uuid.New(),
+				userUUID:     userID,
 				reqBody:      strings.NewReader(`{x}`),
 				paramsGetter: rest.ChiNamedURLParamsGetter,
 			},
@@ -132,10 +134,11 @@ func Test_createPendingPaymentPlanHandler(t *testing.T) {
 	t.Parallel()
 
 	var (
-		userUUID = uuid.New()
+		userUUID = uuid.Must(uuid.NewV4())
+		planUUID = uuid.Must(uuid.NewV4())
 		request  = CreatePendingPaymentPlanRequest{
 			PendingPayment: service.CreatePaymentPlanParams{
-				ID:          uuid.New(),
+				ID:          planUUID,
 				Currency:    "usdc",
 				TotalAmount: "100",
 				Installments: []service.PaymentPlanInstallmentParams{
@@ -262,10 +265,11 @@ func Test_createPendingPaymentPlanHandlerServiceError(t *testing.T) {
 	t.Parallel()
 
 	var (
-		userUUID = uuid.New()
+		userUUID = uuid.Must(uuid.NewV4())
+		planUUID = uuid.Must(uuid.NewV4())
 		request  = CreatePendingPaymentPlanRequest{
 			PendingPayment: service.CreatePaymentPlanParams{
-				ID:          uuid.New(),
+				ID:          planUUID,
 				Currency:    "usdc",
 				TotalAmount: "100",
 				Installments: []service.PaymentPlanInstallmentParams{
@@ -360,8 +364,8 @@ func Test_completePaymentPlanHandler(t *testing.T) {
 	t.Parallel()
 
 	var (
-		userUUID      = uuid.New()
-		paymentPlanID = uuid.New()
+		userUUID      = uuid.Must(uuid.NewV4())
+		paymentPlanID = uuid.Must(uuid.NewV4())
 		paramsGetter  = rest.ChiNamedURLParamsGetter
 		payment       = service.PaymentPlans{
 			ID:           paymentPlanID.String(),
@@ -405,6 +409,8 @@ func Test_completePaymentPlanHandler(t *testing.T) {
 func Test_completePaymentPlanHandlerParamsError(t *testing.T) {
 	t.Parallel()
 
+	userUUID := uuid.Must(uuid.NewV4())
+
 	type args struct {
 		userUUID        uuid.UUID
 		paymentPlanUUID string
@@ -420,7 +426,7 @@ func Test_completePaymentPlanHandlerParamsError(t *testing.T) {
 		{
 			name: "returns 400 if passing a invalid param uuid",
 			args: args{
-				userUUID:        uuid.New(),
+				userUUID:        userUUID,
 				paymentPlanUUID: "x",
 				paramsGetter:    rest.ChiNamedURLParamsGetter,
 			},
@@ -429,7 +435,7 @@ func Test_completePaymentPlanHandlerParamsError(t *testing.T) {
 		{
 			name: "returns 400 if passing a invalid param uuid",
 			args: args{
-				userUUID:        uuid.New(),
+				userUUID:        userUUID,
 				paymentPlanUUID: "x",
 				paramsGetter: func(ctx context.Context, key string) (string, *handlerwrap.ErrorResponse) {
 					return "", handlerwrap.MissingParamError{Name: key}.ToErrorResponse()
@@ -475,8 +481,8 @@ func Test_completePaymentPlanHandlerServiceError(t *testing.T) {
 	t.Parallel()
 
 	var (
-		userUUID      = uuid.New()
-		paymentPlanID = uuid.New()
+		userUUID      = uuid.Must(uuid.NewV4())
+		paymentPlanID = uuid.Must(uuid.NewV4())
 		paramsGetter  = rest.ChiNamedURLParamsGetter
 	)
 

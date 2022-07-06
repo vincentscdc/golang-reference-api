@@ -3,7 +3,7 @@ package internalfacing
 import (
 	"context"
 
-	"github.com/google/uuid"
+	"github.com/gofrs/uuid"
 	"github.com/monacohq/golang-common/transport/http/handlerwrap"
 )
 
@@ -25,7 +25,7 @@ func parseUUIDFormatParam(
 		return nil, err
 	}
 
-	uuidVal, parseErr := uuid.Parse(val)
+	uuidVal, parseErr := uuid.FromString(val)
 	if parseErr != nil {
 		return nil, handlerwrap.ParsingParamError{
 			Name:  name,

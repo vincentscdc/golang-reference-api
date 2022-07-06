@@ -7,7 +7,7 @@ import (
 
 	"golangreferenceapi/internal/payments/common"
 
-	"github.com/google/uuid"
+	"github.com/gofrs/uuid"
 )
 
 const (
@@ -31,7 +31,7 @@ type PaymentServiceImp struct {
 
 func NewPaymentPlanService() *PaymentServiceImp {
 	return &PaymentServiceImp{
-		uuidGenerator: uuid.NewRandom,
+		uuidGenerator: uuid.NewV4,
 		memoryStorage: make(map[uuid.UUID][]PaymentPlans),
 	}
 }

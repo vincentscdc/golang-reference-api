@@ -8,20 +8,21 @@ import (
 
 	"golangreferenceapi/internal/payments/common"
 
-	"github.com/google/uuid"
+	"github.com/gofrs/uuid"
 )
 
 func TestPaymentServiceImp_CreatePendingPaymentPlan(t *testing.T) {
 	t.Parallel()
 
 	var (
-		userID   = uuid.New()
-		ctx      = context.Background()
-		dueAt, _ = time.Parse(common.TimeFormat, "2021-11-10T23:00:00Z")
+		userID        = uuid.Must(uuid.NewV4())
+		paymentPlanID = uuid.Must(uuid.NewV4())
+		ctx           = context.Background()
+		dueAt, _      = time.Parse(common.TimeFormat, "2021-11-10T23:00:00Z")
 	)
 
 	paymentPlanParams := &CreatePaymentPlanParams{
-		ID:          uuid.New(),
+		ID:          paymentPlanID,
 		Currency:    "usdc",
 		TotalAmount: "1000",
 		Installments: []PaymentPlanInstallmentParams{
@@ -99,7 +100,7 @@ func TestPaymentServiceImp_CreatePendingPaymentPlan(t *testing.T) {
 		t.Errorf("unexpected %v", installment.DueAt)
 	}
 
-	if id, err := uuid.Parse(installment.ID); err != nil || id == uuid.Nil {
+	if id, err := uuid.FromString(installment.ID); err != nil || id == uuid.Nil {
 		t.Errorf("unexpected %v", installment.ID)
 	}
 }
@@ -108,13 +109,14 @@ func TestPaymentServiceImp_GetPaymentPlanByUserID(t *testing.T) {
 	t.Parallel()
 
 	var (
-		userID   = uuid.New()
+		userID   = uuid.Must(uuid.NewV4())
+		planID   = uuid.Must(uuid.NewV4())
 		ctx      = context.Background()
 		dueAt, _ = time.Parse(common.TimeFormat, "2021-11-10T23:00:00Z")
 	)
 
 	paymentPlanParams := &CreatePaymentPlanParams{
-		ID:          uuid.New(),
+		ID:          planID,
 		Currency:    "usdc",
 		TotalAmount: "1000",
 		Installments: []PaymentPlanInstallmentParams{
@@ -133,7 +135,7 @@ func TestPaymentServiceImp_GetPaymentPlanByUserID(t *testing.T) {
 		t.Errorf("failed to create payment plan %s", err.Error())
 	}
 
-	payments, err := service.GetPaymentPlanByUserID(ctx, uuid.New())
+	payments, err := service.GetPaymentPlanByUserID(ctx, uuid.Must(uuid.NewV4()))
 	if !errors.Is(err, ErrRecordNotFound) {
 		t.Errorf("unexpected record existed: %v", payments)
 	}
@@ -187,7 +189,7 @@ func TestPaymentServiceImp_GetPaymentPlanByUserID(t *testing.T) {
 		t.Errorf("unexpected %v", installment.DueAt)
 	}
 
-	if id, err := uuid.Parse(installment.ID); err != nil || id == uuid.Nil {
+	if id, err := uuid.FromString(installment.ID); err != nil || id == uuid.Nil {
 		t.Errorf("unexpected %v", installment.ID)
 	}
 }
@@ -196,9 +198,9 @@ func TestPaymentServiceImp_CompletePaymentPlanCreation(t *testing.T) {
 	t.Parallel()
 
 	var (
-		userID    = uuid.New()
+		userID    = uuid.Must(uuid.NewV4())
 		ctx       = context.Background()
-		paymentID = uuid.New()
+		paymentID = uuid.Must(uuid.NewV4())
 		dueAt, _  = time.Parse(common.TimeFormat, "2021-11-10T23:00:00Z")
 	)
 
@@ -271,7 +273,7 @@ func TestPaymentServiceImp_CompletePaymentPlanCreation(t *testing.T) {
 		t.Errorf("unexpected %v", installment.DueAt)
 	}
 
-	if id, err := uuid.Parse(installment.ID); err != nil || id == uuid.Nil {
+	if id, err := uuid.FromString(installment.ID); err != nil || id == uuid.Nil {
 		t.Errorf("unexpected %v", installment.ID)
 	}
 }
@@ -280,9 +282,9 @@ func TestPaymentServiceImp_CompletePaymentPlanCreationNotFound(t *testing.T) {
 	t.Parallel()
 
 	var (
-		userID    = uuid.New()
+		userID    = uuid.Must(uuid.NewV4())
 		ctx       = context.Background()
-		paymentID = uuid.New()
+		paymentID = uuid.Must(uuid.NewV4())
 		dueAt, _  = time.Parse(common.TimeFormat, "2021-11-10T23:00:00Z")
 	)
 
@@ -294,11 +296,11 @@ func TestPaymentServiceImp_CompletePaymentPlanCreationNotFound(t *testing.T) {
 		{
 			name:      "payment record not found",
 			userID:    userID,
-			paymentID: uuid.New(),
+			paymentID: uuid.Must(uuid.NewV4()),
 		},
 		{
 			name:      "user record not fund",
-			userID:    uuid.New(),
+			userID:    uuid.Must(uuid.NewV4()),
 			paymentID: paymentID,
 		},
 	}
@@ -340,9 +342,9 @@ func TestPaymentServiceImp_CompletePaymentPlanCreationUUIDGenError(t *testing.T)
 	t.Parallel()
 
 	var (
-		userID    = uuid.New()
+		userID    = uuid.Must(uuid.NewV4())
 		ctx       = context.Background()
-		paymentID = uuid.New()
+		paymentID = uuid.Must(uuid.NewV4())
 		dueAt, _  = time.Parse(common.TimeFormat, "2021-11-10T23:00:00Z")
 	)
 

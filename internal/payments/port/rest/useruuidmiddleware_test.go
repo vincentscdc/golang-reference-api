@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/google/uuid"
+	"github.com/gofrs/uuid"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/rs/zerolog"
@@ -104,6 +104,8 @@ func Test_UserUUID(t *testing.T) {
 func Test_UUIDMiddlewareNotSet(t *testing.T) {
 	t.Parallel()
 
+	userID, _ := uuid.NewV4()
+
 	echoHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		userID, err := GetUserUUID(r.Context())
 		if err != nil {
@@ -125,7 +127,7 @@ func Test_UUIDMiddlewareNotSet(t *testing.T) {
 	defer srv.Close()
 
 	req := httptest.NewRequest("GET", "/", nil)
-	setRequestHeaderUserID(req, uuid.New().String())
+	setRequestHeaderUserID(req, userID.String())
 
 	rr := httptest.NewRecorder()
 
