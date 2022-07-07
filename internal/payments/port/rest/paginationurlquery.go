@@ -4,7 +4,7 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/monacohq/golang-common/transport/http/handlerwrap"
+	"github.com/monacohq/golang-common/transport/http/handlerwrap/v2"
 )
 
 const (

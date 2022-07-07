@@ -15,7 +15,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	"github.com/monacohq/golang-common/transport/http/handlerwrap"
+	"github.com/monacohq/golang-common/transport/http/handlerwrap/v2"
 
 	"golangreferenceapi/internal/payments/common"
 	"golangreferenceapi/internal/payments/mock/servicemock"
@@ -528,7 +528,7 @@ func Test_completePaymentPlanHandlerServiceError(t *testing.T) {
 				t.Errorf("returned unexpected response: %v", resp)
 			}
 
-			if !reflect.DeepEqual(wantResponse, errRsp) {
+			if !reflect.DeepEqual(wantResponse, errRsp) { // nolint: deepequalerrors // linter bug these are responses, not errors
 				t.Errorf("returned unexpected err. expected: %v, actual: %v", wantResponse, errRsp)
 			}
 		})

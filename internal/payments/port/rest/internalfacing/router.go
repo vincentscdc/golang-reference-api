@@ -1,11 +1,11 @@
 package internalfacing
 
 import (
-	"github.com/go-chi/chi/v5"
-	"github.com/monacohq/golang-common/transport/http/handlerwrap"
-	"github.com/rs/zerolog"
-
 	"golangreferenceapi/internal/payments/service"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/monacohq/golang-common/transport/http/handlerwrap/v2"
+	"github.com/rs/zerolog"
 )
 
 func AddRoutes(

@@ -3,13 +3,12 @@ package userfacing
 import (
 	"net/http"
 
-	"github.com/monacohq/golang-common/transport/http/middleware/cryptouseruuid"
-
 	"golangreferenceapi/internal/payments/port/rest"
-
 	"golangreferenceapi/internal/payments/service"
 
-	"github.com/monacohq/golang-common/transport/http/handlerwrap"
+	"github.com/monacohq/golang-common/transport/http/middleware/cryptouseruuid"
+
+	"github.com/monacohq/golang-common/transport/http/handlerwrap/v2"
 )
 
 const (

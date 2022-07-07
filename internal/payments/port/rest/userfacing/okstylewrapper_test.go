@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/monacohq/golang-common/transport/http/handlerwrap"
+	"github.com/monacohq/golang-common/transport/http/handlerwrap/v2"
 	"github.com/rs/zerolog"
 )
 

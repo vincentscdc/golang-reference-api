@@ -8,16 +8,16 @@ import (
 	"testing"
 	"time"
 
-	"github.com/monacohq/golang-common/transport/http/middleware/cryptouseruuid"
-
 	"golangreferenceapi/internal/payments/common"
 	"golangreferenceapi/internal/payments/mock/servicemock"
 	"golangreferenceapi/internal/payments/port/rest"
 	"golangreferenceapi/internal/payments/service"
 
+	"github.com/monacohq/golang-common/transport/http/middleware/cryptouseruuid"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	"github.com/monacohq/golang-common/transport/http/handlerwrap"
+	"github.com/monacohq/golang-common/transport/http/handlerwrap/v2"
 )
 
 func Test_listPaymentPlansHandler_SuccessCase(t *testing.T) {
@@ -181,7 +181,7 @@ func Test_listPaymentPlansHandler_InternalError(t *testing.T) {
 					t.Errorf("unexpected response %v", resp)
 				}
 
-				if !reflect.DeepEqual(rest.ServiceErrorToErrorResp(tt.err), err) {
+				if !reflect.DeepEqual(rest.ServiceErrorToErrorResp(tt.err), err) { // nolint: deepequalerrors // linter bug these are responses, not errors
 					t.Errorf("unexpected error, expected: %v, actual: %v", rest.ServiceErrorToErrorResp(tt.err), err)
 				}
 			})

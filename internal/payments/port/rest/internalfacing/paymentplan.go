@@ -7,7 +7,7 @@ import (
 	"golangreferenceapi/internal/payments/service"
 
 	"github.com/gofrs/uuid"
-	"github.com/monacohq/golang-common/transport/http/handlerwrap"
+	"github.com/monacohq/golang-common/transport/http/handlerwrap/v2"
 )
 
 type CreatePendingPaymentPlanRequest struct {
