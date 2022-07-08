@@ -38,7 +38,7 @@ func run() error {
 
 	// configuration
 	currEnv := "local"
-	if e := os.Getenv("APP_ENVIRONMENT"); e != "" {
+	if e := os.Getenv("APP_ENV"); e != "" {
 		currEnv = e
 	}
 
