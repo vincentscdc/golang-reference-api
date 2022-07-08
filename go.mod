@@ -11,7 +11,7 @@ require (
 	github.com/jackc/pgconn v1.12.1
 	github.com/jackc/pgx/v4 v4.16.1
 	github.com/monacohq/golang-common/monitoring/otelinit v1.0.3
-	github.com/monacohq/golang-common/transport/http/handlerwrap/v2 v2.0.0
+	github.com/monacohq/golang-common/transport/http/handlerwrap/v2 v2.0.1
 	github.com/monacohq/golang-common/transport/http/middleware/cryptouseruuid v1.0.0
 	github.com/ory/dockertest/v3 v3.9.1
 	github.com/rs/zerolog v1.27.0
@@ -92,7 +92,7 @@ require (
 	golang.org/x/sys v0.0.0-20220704084225-05e143d24a9e // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/tools v0.1.11 // indirect
-	google.golang.org/genproto v0.0.0-20220706185917-7780775163c4 // indirect
+	google.golang.org/genproto v0.0.0-20220707150051-590a5ac7bee1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	olympos.io/encoding/edn v0.0.0-20201019073823-d3554ca0b0a3 // indirect

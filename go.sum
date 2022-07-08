@@ -911,8 +911,8 @@ github.com/modern-go/reflect2 v1.0.1/go.mod h1:bx2lNnkwVCuqBIxFjflWJWanXIb3Rllmb
 github.com/modern-go/reflect2 v1.0.2/go.mod h1:yWuevngMOJpCy52FWWMvUC8ws7m/LJsjYzDa0/r8luk=
 github.com/monacohq/golang-common/monitoring/otelinit v1.0.3 h1:TlS5eZBx4cmA0UnUXZOBTdHHGmC1ZtCTJL4JAXxZEgk=
 github.com/monacohq/golang-common/monitoring/otelinit v1.0.3/go.mod h1:AoY8RTTPMNEcrFHWOifQSGEPoU9BW2yAQ021sXg0Vk8=
-github.com/monacohq/golang-common/transport/http/handlerwrap/v2 v2.0.0 h1:0ISmXEBjfhXPRD8XsechQJ4itXpkTYDzd/2jpYz2zOk=
-github.com/monacohq/golang-common/transport/http/handlerwrap/v2 v2.0.0/go.mod h1:hXlazobOJH6e7lVzDGqtE/6grfOxEwbS2YRxLuY0f9s=
+github.com/monacohq/golang-common/transport/http/handlerwrap/v2 v2.0.1 h1:Pq7xZSTu+HSeQm4eM/wfPalgvZq2/uSybT1dOczcL7k=
+github.com/monacohq/golang-common/transport/http/handlerwrap/v2 v2.0.1/go.mod h1:hXlazobOJH6e7lVzDGqtE/6grfOxEwbS2YRxLuY0f9s=
 github.com/monacohq/golang-common/transport/http/middleware/cryptouseruuid v1.0.0 h1:dhBq2fXPQY3QPomU9KqL2Nfk9RBjdmKuqoubDAnnDJo=
 github.com/monacohq/golang-common/transport/http/middleware/cryptouseruuid v1.0.0/go.mod h1:OKhaMNdrnIFvnblyFnKInKF1ZPLM/U/zk3g8HApm4xY=
 github.com/montanaflynn/stats v0.0.0-20171201202039-1bf9dbcd8cbe/go.mod h1:wL8QJuTMNUDYhXwkmfOly8iTdp5TEcJFWZD2D7SIkUc=
@@ -1796,8 +1796,8 @@ google.golang.org/genproto v0.0.0-20211206160659-862468c7d6e0/go.mod h1:5CzLGKJ6
 google.golang.org/genproto v0.0.0-20211208223120-3a66f561d7aa/go.mod h1:5CzLGKJ67TSI2B9POpiiyGha0AjJvZIUgRMt1dSmuhc=
 google.golang.org/genproto v0.0.0-20220111164026-67b88f271998/go.mod h1:5CzLGKJ67TSI2B9POpiiyGha0AjJvZIUgRMt1dSmuhc=
 google.golang.org/genproto v0.0.0-20220314164441-57ef72a4c106/go.mod h1:hAL49I2IFola2sVEjAn7MEwsja0xp51I0tlGAf9hz4E=
-google.golang.org/genproto v0.0.0-20220706185917-7780775163c4 h1:7YDGQC/0sigNGzsEWyb9s72jTxlFdwVEYNJHbfQ+Dtg=
-google.golang.org/genproto v0.0.0-20220706185917-7780775163c4/go.mod h1:KEWEmljWE5zPzLBa/oHl6DaEt9LmfH6WtH1OHIvleBA=
+google.golang.org/genproto v0.0.0-20220707150051-590a5ac7bee1 h1:9xwvuxWX7vv5abXveMxOhRBUdidfOIq/U4jeZg32tJg=
+google.golang.org/genproto v0.0.0-20220707150051-590a5ac7bee1/go.mod h1:KEWEmljWE5zPzLBa/oHl6DaEt9LmfH6WtH1OHIvleBA=
 google.golang.org/grpc v0.0.0-20160317175043-d3ddb4469d5a/go.mod h1:yo6s7OP7yaDglbqo1J04qKzAhqBH6lvTonzMVmEdcZw=
 google.golang.org/grpc v1.19.0/go.mod h1:mqu4LbDTu4XGKhr4mRzUsmM4RtVoemTSY81AxZiDr8c=
 google.golang.org/grpc v1.20.1/go.mod h1:10oTOabMzJvdu6/UiuZezV6QK5dSlG84ov/aaiqXj38=
