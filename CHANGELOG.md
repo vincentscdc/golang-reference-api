@@ -1,7 +1,27 @@
-## Unreleased (7c97bbc..46998ab)
+## Unreleased (21c8d26..360c887)
+#### Bug Fixes
+- update to handlerwrap/v2 (#85) - (dd64f25) - vincentscdc
+#### Features
+- **(dockertest)** add dockertest in ci for unit tests with test db (#56) - (946e0b2) - jonathanyang-cryptocom
+- read github username and personal access key from local file (#82) - (123ab59) - kevinchiutw
+- use ROLE_ARN in deployment (#67) - (8c6f038) - lttsai
+- add otel into grpc (#61) - (21c8d26) - stanley hsieh
+#### Miscellaneous Chores
+- **(deps)** upgrade deps - (360c887) - Vincent Serpoul
+#### Refactoring
+- **(ci)** parameterize app name (#76) - (9595f7a) - BennTayCDC
+- Use useruuidmiddleware in go common (#80) - (c89e219) - gaston-chiu
+- use gofrs/uuid in sqlc gen and payment repo (#79) - (63989a0) - jonathanyang-cryptocom
+- Clean up unused package (#66) - (fe91f77) - gaston-chiu
+
+- - -
+
+## Unreleased (7c97bbc..d51ec8b)
 #### Bug Fixes
 - use APP_ENV in local deployment - (6bcc809) - Vincent Serpoul
 - remove unnessecary circleci keys - (468fd38) - Vincent Serpoul
+#### Continuous Integration
+- deploy tag v2022.07.04.1640 to adev - (d51ec8b) - Vincent Serpoul
 #### Documentation
 - add circleci and coveralls status badges (#57) - (fa93d76) - Hans Liu
 #### Features
@@ -10,6 +30,7 @@
 - Add buf linter into CI pipeline (#58) - (d5bf644) - gaston-chiu
 #### Miscellaneous Chores
 - **(localdev)** add port forward in the deploy makefile - (46998ab) - Vincent Serpoul
+- update CHANGELOG.md for v2022.06.27.1049 - (4e12aa5) - Vincent Serpoul
 #### Refactoring
 - **(main)** split into multiple functions (#72) - (25093c5) - BennTayCDC
 - Clean up codebase (#47) - (9467ca5) - gaston-chiu
