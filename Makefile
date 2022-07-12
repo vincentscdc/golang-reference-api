@@ -81,7 +81,7 @@ build: lint test bench sec-scan docker-build ## lint, test, bench and sec scan b
 LAST_MAIN_COMMIT_HASH=$(shell git rev-parse --short HEAD)
 LAST_MAIN_COMMIT_TIME=$(shell git log main -n1 --format='%cd' --date='iso-strict')
 
-docker-build-ci: ## docker build, works only in the cloud
+docker-build: ## docker build
 	DOCKER_BUILDKIT=1 \
 	docker build \
 		-f Dockerfile \
@@ -90,26 +90,6 @@ docker-build-ci: ## docker build, works only in the cloud
 		--build-arg LAST_MAIN_COMMIT_TIME=$(LAST_MAIN_COMMIT_TIME) \
 		--ssh default \
 		--progress=plain \
-		./
-
-GITHUB_SECRET_FILE=.github_personal_access_token
-
-docker-build-local: ## docker build locally, works on m1 macs
-	@read -r GITHUB_USER GITHUB_PERSONAL_ACCESS_TOKEN <<< $$(cat $(GITHUB_SECRET_FILE) 2>/dev/null) && \
-		if [[ -z "$$GITHUB_USER" || -z "$$GITHUB_PERSONAL_ACCESS_TOKEN" ]]; then \
-			read -p "what is your github username: "  -r GITHUB_USER; \
-			read -p "what is your github personal access token: " -rs GITHUB_PERSONAL_ACCESS_TOKEN; \
-			echo "$$GITHUB_USER $$GITHUB_PERSONAL_ACCESS_TOKEN" > $(GITHUB_SECRET_FILE); \
-			printf "\nYour Github username and personal access token are saved in the \033[0;31m$(GITHUB_SECRET_FILE)\033[0m file.\n"; \
-		fi && \
-	DOCKER_BUILDKIT=1 \
-	docker build \
-		-f Dockerfile.local \
-		-t $(APP_NAME) \
-		--build-arg LAST_MAIN_COMMIT_HASH=$(LAST_MAIN_COMMIT_HASH) \
-		--build-arg LAST_MAIN_COMMIT_TIME=$(LAST_MAIN_COMMIT_TIME) \
-		--build-arg GITHUB_USER=$$GITHUB_USER \
-		--build-arg GITHUB_PERSONAL_ACCESS_TOKEN=$$GITHUB_PERSONAL_ACCESS_TOKEN \
 		./
 
 ###########
@@ -172,15 +152,17 @@ changelog-commit:
 # db #
 ######
 
+APP_NAME_UND=$(shell echo "$(APP_NAME)" | tr '-' '_')
+
 db-pg-init: 
 	@( \
-	printf "Enter pass for db: "; read -rs DB_PASSWORD && \
-	printf "\nEnter environment suffix(_dev, _local...): "; read DB_SUFFIX &&\
+	printf "Enter pass for db: \n"; read -rs DB_PASSWORD &&\
+	printf "Enter port(5436...): \n"; read -r DB_PORT &&\
 	sed \
 	-e "s/DB_PASSWORD/$$DB_PASSWORD/g" \
-	-e "s/DB_SUFFIX/$$DB_SUFFIX/g" \
-	./db/init/init.sql | \
-	PGPASSWORD=$$DB_PASSWORD psql -h localhost -p 5436 -U postgres -f - \
+	-e "s/APP_NAME_UND/$(APP_NAME_UND)/g" \
+	./database/init/init.sql | \
+	PGPASSWORD=$$DB_PASSWORD psql -h localhost -p $$DB_PORT -U postgres -f - \
 	)
 
 db-cockroachdb-rootkey:
@@ -192,13 +174,11 @@ db-cockroachdb-rootkey:
 
 db-cockroachdb-init:
 	@( \
-	printf "Enter pass for db: "; read -s DB_PASSWORD && \
-	printf "\nEnter environment suffix(_dev, _local...): "; read DB_SUFFIX &&\
-	printf "Enter port(26257...): "; read -r DB_PORT &&\
+	printf "Enter pass for db: \n"; read -s DB_PASSWORD && \
+	printf "Enter port(26257...): \n"; read -r DB_PORT &&\
 	sed \
 	-e "s/DB_PASSWORD/$$DB_PASSWORD/g" \
-	-e "s/DB_SUFFIX/$$DB_SUFFIX/g" \
-	./db/init/init.sql > ./db/crdb-certs/init.sed.sql && \
+	./database/init/init.sql > ./db/crdb-certs/init.sed.sql && \
 	cockroach sql --certs-dir=./db/crdb-certs -f ./db/crdb-certs/init.sed.sql -p $$DB_PORT && \
 	rm ./db/crdb-certs/init.sed.sql \
 	)
@@ -215,6 +195,15 @@ sql-gen-sqlboiler:
 
 sqlc:
 	sqlc generate -f ./database/sqlc.yaml && mockgen -source=./internal/db/querier.go -destination=./internal/db/mockquerier.go -package=db
+
+migration-local-dev:
+	@( \
+	printf "Enter pass for db: \n"; read -s DB_PASSWORD && \
+	printf "Enter port(5432, 26257...): \n"; read -r DB_PORT &&\
+	migrate -database "postgres://$(APP_NAME_UND)_app:$${DB_PASSWORD}@localhost:$${DB_PORT}/$(APP_NAME_UND)_local?sslmode=disable" -path database/migrations up &&\
+	migrate -database "postgres://$(APP_NAME_UND)_app:$${DB_PASSWORD}@localhost:$${DB_PORT}/$(APP_NAME_UND)_localdev?sslmode=disable" -path database/migrations up \
+	)
+
 
 ###########
 # swagger #

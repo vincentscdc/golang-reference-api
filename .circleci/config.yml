@@ -40,7 +40,7 @@ commands:
           version: "20.10.14"
           docker_layer_caching: true
       - add_ssh_keys # WARNING: DO NOT ADD A DEPLOY KEY DIRECTLY FROM circleci, create in github and add the ssh_key manually, otherwise it won't be injected here
-      - run: make docker-build-ci
+      - run: make docker-build
 
   ecr-push:
     parameters:
