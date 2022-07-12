@@ -51,6 +51,7 @@ RUN CGO_ENABLED=0 go build \
     -buildvcs=true \
     -o /api ./cmd/api/*.go
     
+    
 ##############
 # COMPRESSOR #
 ##############
