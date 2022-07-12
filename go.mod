@@ -3,6 +3,7 @@ module golangreferenceapi
 go 1.18
 
 require (
+	github.com/ericlagergren/decimal v0.0.0-20211103172832-aca2edc11f73
 	github.com/go-chi/chi/v5 v5.0.7
 	github.com/gofrs/uuid v4.2.0+incompatible
 	github.com/golang-migrate/migrate/v4 v4.15.2
@@ -10,12 +11,12 @@ require (
 	github.com/ilyakaznacheev/cleanenv v1.3.0
 	github.com/jackc/pgconn v1.12.1
 	github.com/jackc/pgx/v4 v4.16.1
+	github.com/monacohq/golang-common/database/pginit v1.2.0
 	github.com/monacohq/golang-common/monitoring/otelinit v1.0.3
 	github.com/monacohq/golang-common/transport/http/handlerwrap/v2 v2.0.1
 	github.com/monacohq/golang-common/transport/http/middleware/cryptouseruuid v1.0.0
 	github.com/ory/dockertest/v3 v3.9.1
 	github.com/rs/zerolog v1.27.0
-	github.com/shopspring/decimal v1.3.1
 	github.com/swaggo/http-swagger v1.3.0
 	github.com/swaggo/swag v1.8.3
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.32.0

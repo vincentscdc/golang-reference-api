@@ -9,8 +9,8 @@ import (
 	"context"
 	"time"
 
+	"github.com/ericlagergren/decimal"
 	"github.com/gofrs/uuid"
-	"github.com/shopspring/decimal"
 )
 
 const CreatePaymentInstallments = `-- name: CreatePaymentInstallments :one
@@ -24,7 +24,7 @@ type CreatePaymentInstallmentsParams struct {
 	ID            uuid.UUID
 	PaymentPlanID uuid.UUID
 	Currency      Currency
-	Amount        decimal.Decimal
+	Amount        decimal.Big
 	DueAt         time.Time
 	Status        PaymentInstallmentStatus
 }
@@ -33,7 +33,7 @@ type CreatePaymentInstallmentsRow struct {
 	ID            uuid.UUID
 	PaymentPlanID uuid.UUID
 	Currency      Currency
-	Amount        decimal.Decimal
+	Amount        decimal.Big
 	DueAt         time.Time
 	Status        PaymentInstallmentStatus
 	CreatedAt     time.Time
@@ -73,7 +73,7 @@ type ListPaymentInstallmentsByPlanIDRow struct {
 	ID            uuid.UUID
 	PaymentPlanID uuid.UUID
 	Currency      Currency
-	Amount        decimal.Decimal
+	Amount        decimal.Big
 	DueAt         time.Time
 	Status        PaymentInstallmentStatus
 	CreatedAt     time.Time

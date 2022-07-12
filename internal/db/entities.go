@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/ericlagergren/decimal"
 	"github.com/gofrs/uuid"
-	"github.com/shopspring/decimal"
 )
 
 type Currency string
@@ -122,7 +122,7 @@ type PaymentInstallment struct {
 	CreatedAt     time.Time
 	UpdatedAt     time.Time
 	Currency      Currency
-	Amount        decimal.Decimal
+	Amount        decimal.Big
 	DueAt         time.Time
 	Status        PaymentInstallmentStatus
 	PaymentPlanID uuid.UUID
@@ -134,6 +134,6 @@ type PaymentPlan struct {
 	UpdatedAt time.Time
 	Currency  Currency
 	UserID    uuid.UUID
-	Amount    decimal.Decimal
+	Amount    decimal.Big
 	Status    PaymentStatus
 }

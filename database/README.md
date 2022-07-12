@@ -25,7 +25,7 @@ Files will be created in `/internal/db`. **DO NOT** manually modify the generate
 
 ## PGX Decimal
 
-The numeric type in PGX DB entities generated using `sqlc` will use https://github.com/shopspring/decimal , over-rided in `sqlc.yaml`
+The numeric type in PGX DB entities generated using `sqlc` will use https://github.com/ericlagergren/decimal , overridden in `sqlc.yaml`
 
 https://github.com/jackc/pgx/wiki/Numeric-and-decimal-support#:~:text=The%20Go%20language%20does%20not,to%20a%20float64%20or%20string%20.
 
@@ -41,7 +41,7 @@ defer func() {
 }()
 
 conn.ConnInfo().RegisterDataType(pgtype.DataType{
-	Value: &shopspring.Numeric{},
+	Value: &decimal.Big{},
 	Name:  "numeric",
 	OID:   pgtype.NumericOID
 })

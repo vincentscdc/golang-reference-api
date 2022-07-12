@@ -11,6 +11,7 @@ import (
 	"golangreferenceapi/internal/payments/port/rest"
 	"golangreferenceapi/internal/payments/port/rest/internalfacing"
 	"golangreferenceapi/internal/payments/port/rest/userfacing"
+	"golangreferenceapi/internal/payments/repo"
 	"golangreferenceapi/internal/payments/service"
 
 	"github.com/go-chi/chi/v5"
@@ -29,7 +30,7 @@ func (s *API) setupLog() {
 	}
 }
 
-func (s *API) setupHTTPServer() {
+func (s *API) setupHTTPServer(repository repo.Repository) {
 	// main router
 	httpRouter := chi.NewRouter()
 
@@ -48,6 +49,7 @@ func (s *API) setupHTTPServer() {
 	))
 
 	paymentService := service.NewPaymentPlanService()
+	paymentService.UseRepo(repository)
 
 	httpRouter.Route("/"+s.cfg.Application.Version, func(r chi.Router) {
 		userfacing.AddRoutes(r, &log.Logger, paymentService)

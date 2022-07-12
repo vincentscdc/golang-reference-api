@@ -17,7 +17,7 @@ sql:
         emit_all_enum_values: true
         output_models_file_name: "entities.go"
         overrides:
-          - go_type: "github.com/shopspring/decimal.Decimal"
+          - go_type: "github.com/ericlagergren/decimal.Big"
             db_type: "pg_catalog.numeric"
           - go_type: "github.com/gofrs/uuid.UUID"
             db_type: "uuid"

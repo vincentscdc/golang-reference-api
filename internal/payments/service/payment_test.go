@@ -3,10 +3,12 @@ package service
 import (
 	"context"
 	"errors"
+	"reflect"
 	"testing"
 	"time"
 
 	"golangreferenceapi/internal/payments/common"
+	"golangreferenceapi/internal/payments/repo/sqlc"
 
 	"github.com/gofrs/uuid"
 )
@@ -371,5 +373,16 @@ func TestPaymentServiceImp_CompletePaymentPlanCreationUUIDGenError(t *testing.T)
 	_, err := service.CreatePendingPaymentPlan(ctx, userID, paymentPlanParams)
 	if !errors.Is(err, ErrGenerateUUID) {
 		t.Errorf("error expected: %v, actual: %v", ErrGenerateUUID, err)
+	}
+}
+
+func TestPaymentServiceImp_UseRepo(t *testing.T) {
+	t.Parallel()
+
+	service := NewPaymentPlanService()
+	service.UseRepo(&sqlc.Repo{})
+
+	if reflect.TypeOf(service.repository) != reflect.TypeOf(&sqlc.Repo{}) {
+		t.Errorf("returned repository is not of Repo")
 	}
 }

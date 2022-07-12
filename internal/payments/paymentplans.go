@@ -3,15 +3,15 @@ package payments
 import (
 	"time"
 
+	"github.com/ericlagergren/decimal"
 	"github.com/gofrs/uuid"
-	"github.com/shopspring/decimal"
 )
 
 type Plan struct {
 	ID        uuid.UUID
 	UserID    uuid.UUID
 	Currency  string
-	Amount    decimal.Decimal
+	Amount    decimal.Big
 	Status    string
 	CreatedAt time.Time
 	UpdatedAt time.Time
@@ -20,6 +20,6 @@ type Plan struct {
 type CreatePlanParams struct {
 	UserID   uuid.UUID
 	Currency string
-	Amount   decimal.Decimal
+	Amount   decimal.Big
 	Status   string
 }

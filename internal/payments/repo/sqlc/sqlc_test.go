@@ -17,6 +17,7 @@ import (
 	"golangreferenceapi/internal/db"
 	"golangreferenceapi/internal/payments"
 
+	"github.com/ericlagergren/decimal"
 	"github.com/gofrs/uuid"
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
@@ -26,7 +27,6 @@ import (
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
-	"github.com/shopspring/decimal"
 	"go.uber.org/goleak"
 )
 
@@ -150,7 +150,7 @@ func TestSQLCRepo_CreatePaymentPlan(t *testing.T) {
 	}
 
 	querier := db.New(dbConn)
-	amount, _ := decimal.NewFromString("10.98")
+	amount := decimal.New(1098, 2)
 
 	testcases := []struct {
 		testName      string
@@ -163,10 +163,10 @@ func TestSQLCRepo_CreatePaymentPlan(t *testing.T) {
 			paramArg: &payments.CreatePlanParams{
 				UserID:   uuid.UUID{},
 				Currency: "usdc",
-				Amount:   amount,
+				Amount:   *amount,
 				Status:   "pending",
 			},
-			mockedQuerier: nil,
+			mockedQuerier: makeMockQuerier(&db.CreatePaymentPlanRow{}, nil),
 			expectErr:     false,
 		},
 		{
@@ -174,7 +174,7 @@ func TestSQLCRepo_CreatePaymentPlan(t *testing.T) {
 			paramArg: &payments.CreatePlanParams{
 				UserID:   uuid.UUID{},
 				Currency: "usdc",
-				Amount:   amount,
+				Amount:   *amount,
 				Status:   "pending",
 			},
 			mockedQuerier: makeMockQuerier(nil, errors.New("some db err")),
@@ -185,7 +185,7 @@ func TestSQLCRepo_CreatePaymentPlan(t *testing.T) {
 			paramArg: &payments.CreatePlanParams{
 				UserID:   uuid.UUID{},
 				Currency: "usdc",
-				Amount:   amount,
+				Amount:   *amount,
 				Status:   "pending",
 			},
 			mockedQuerier: makeMockQuerier(nil, errors.New("some err")),
@@ -253,7 +253,7 @@ func TestSQLCRepo_ListPaymentPlansByUserID(t *testing.T) {
 		{
 			testName:      "happy",
 			paramUserID:   userUUID,
-			mockedQuerier: nil,
+			mockedQuerier: makeMockQuerier([]*db.ListPaymentPlansByUserIDRow{{}}, nil),
 			expectErr:     false,
 		},
 		{
@@ -306,14 +306,14 @@ func TestSQLCRepo_CreatePaymentInstallment(t *testing.T) {
 	}
 
 	querier := db.New(dbConn)
-	amount, _ := decimal.NewFromString("10.98")
+	amount := decimal.New(1098, 2)
 
 	// create dependent payment entity
 	createdPlan, _ := querier.CreatePaymentPlan(context.Background(), &db.CreatePaymentPlanParams{
 		ID:       uuid.UUID{},
 		UserID:   uuid.UUID{},
 		Currency: "usdc",
-		Amount:   amount,
+		Amount:   *amount,
 		Status:   "pending",
 	})
 
@@ -335,11 +335,11 @@ func TestSQLCRepo_CreatePaymentInstallment(t *testing.T) {
 			paramArg: &payments.CreateInstallmentParams{
 				PaymentPlanID: createdPlan.ID,
 				Currency:      "usdc",
-				Amount:        amount,
+				Amount:        *amount,
 				DueAt:         time.Time{},
 				Status:        "pending",
 			},
-			mockedQuerier: nil,
+			mockedQuerier: makeMockQuerier(&db.CreatePaymentInstallmentsRow{}, nil),
 			expectErr:     false,
 		},
 		{
@@ -347,7 +347,7 @@ func TestSQLCRepo_CreatePaymentInstallment(t *testing.T) {
 			paramArg: &payments.CreateInstallmentParams{
 				PaymentPlanID: uuid.UUID{},
 				Currency:      "usdc",
-				Amount:        amount,
+				Amount:        *amount,
 				DueAt:         time.Time{},
 				Status:        "pending",
 			},
@@ -398,14 +398,14 @@ func TestSQLCRepo_ListPaymentInstallmentsByPlanID(t *testing.T) {
 	}
 
 	querier := db.New(dbConn)
-	amount, _ := decimal.NewFromString("10.98")
+	amount := decimal.New(1098, 2)
 
 	// create dependent payment entity
 	createdPlan, _ := querier.CreatePaymentPlan(context.Background(), &db.CreatePaymentPlanParams{
 		ID:       uuid.UUID{},
 		UserID:   uuid.UUID{},
 		Currency: "usdc",
-		Amount:   amount,
+		Amount:   *amount,
 		Status:   "pending",
 	})
 
@@ -425,7 +425,7 @@ func TestSQLCRepo_ListPaymentInstallmentsByPlanID(t *testing.T) {
 		{
 			testName:      "happy",
 			paramPlanID:   createdPlan.ID,
-			mockedQuerier: nil,
+			mockedQuerier: makeMockQuerier([]*db.ListPaymentInstallmentsByPlanIDRow{{}}, nil),
 			expectErr:     false,
 		},
 		{

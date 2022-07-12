@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"golangreferenceapi/internal/payments/common"
+	"golangreferenceapi/internal/payments/repo"
 
 	"github.com/gofrs/uuid"
 )
@@ -27,6 +28,7 @@ var _ PaymentPlanService = (*PaymentServiceImp)(nil)
 type PaymentServiceImp struct {
 	uuidGenerator UUIDGenerator
 	memoryStorage map[uuid.UUID][]PaymentPlans
+	repository    repo.Repository
 }
 
 func NewPaymentPlanService() *PaymentServiceImp {
@@ -34,6 +36,10 @@ func NewPaymentPlanService() *PaymentServiceImp {
 		uuidGenerator: uuid.NewV4,
 		memoryStorage: make(map[uuid.UUID][]PaymentPlans),
 	}
+}
+
+func (p *PaymentServiceImp) UseRepo(repository repo.Repository) {
+	p.repository = repository
 }
 
 func (p *PaymentServiceImp) SetUUIDGenerator(generator UUIDGenerator) {

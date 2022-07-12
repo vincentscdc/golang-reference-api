@@ -7,26 +7,26 @@ import (
 
 	"golangreferenceapi/internal/payments"
 
+	"github.com/ericlagergren/decimal"
 	"github.com/gofrs/uuid"
-	"github.com/shopspring/decimal"
 )
 
 // nolint: gochecknoglobals // tests
 var (
 	testBenchCtx                    = context.Background()
-	testBenchAmount, _              = decimal.NewFromString("10.98")
+	testBenchAmount                 = decimal.New(1098, 2)
 	testBenchUserID                 = uuid.Must(uuid.NewV4())
 	testBenchCreatePaymentPlanParam = &payments.CreatePlanParams{
 		UserID:   testBenchUserID,
 		Currency: "usdc",
-		Amount:   testBenchAmount,
+		Amount:   *testBenchAmount,
 		Status:   "pending",
 	}
 	testBenchRefPaymentPlan = &payments.Plan{
 		ID:        uuid.UUID{},
 		UserID:    uuid.UUID{},
 		Currency:  "",
-		Amount:    decimal.Decimal{},
+		Amount:    decimal.Big{},
 		Status:    "",
 		CreatedAt: time.Time{},
 		UpdatedAt: time.Time{},
@@ -57,7 +57,7 @@ func BenchmarkCreatePaymentInstallment(b *testing.B) {
 		_, err := testRefRepo.CreatePaymentInstallment(testBenchCtx, &payments.CreateInstallmentParams{
 			PaymentPlanID: testBenchRefPaymentPlan.ID,
 			Currency:      "usdc",
-			Amount:        testBenchAmount,
+			Amount:        *testBenchAmount,
 			DueAt:         time.Time{},
 			Status:        "pending",
 		})

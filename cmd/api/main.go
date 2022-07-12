@@ -10,6 +10,7 @@ import (
 
 	"golangreferenceapi/internal/api"
 	"golangreferenceapi/internal/api/configuration"
+	"golangreferenceapi/internal/payments/repo/sqlc"
 
 	"github.com/rs/zerolog/log"
 )
@@ -53,17 +54,18 @@ func run() error {
 		log.Info().Err(err).Msg("GetConfig")
 	}
 
+	// repository
+	repo, err := sqlc.NewRepo(ctx, &cfg.DB)
+	if err != nil {
+		return fmt.Errorf("failed to setup repository: %w", err)
+	}
+
 	// Listen for syscall signals for process to interrupt/quit
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 
 	// api server
-	apiSrv, errN := api.NewAPI(ctx, &cfg)
-	if errN != nil {
-		return fmt.Errorf("GetConfig failed: %w", errN)
-	}
-
-	shutdown, err := apiSrv.Start(ctx)
+	shutdown, err := api.NewAPI(&cfg, repo).Start(ctx)
 	if err != nil {
 		return fmt.Errorf("server failed to start: %w", err)
 	}

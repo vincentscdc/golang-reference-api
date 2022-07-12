@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"golangreferenceapi/internal/api/configuration"
+	"golangreferenceapi/internal/payments/repo"
 
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc"
@@ -33,14 +34,14 @@ type API struct {
 	shutdownFuncs []*shutdownFunc
 }
 
-func NewAPI(ctx context.Context, cfg *configuration.Config) (*API, error) {
+func NewAPI(cfg *configuration.Config, repository repo.Repository) *API {
 	srv := &API{cfg: *cfg}
 	srv.setupLog()
-	srv.setupHTTPServer()
+	srv.setupHTTPServer(repository)
 	srv.setupGRPCServer()
 	srv.setupSwagger()
 
-	return srv, nil
+	return srv
 }
 
 func (s *API) Start(ctx context.Context) (func(), error) {
@@ -50,15 +51,13 @@ func (s *API) Start(ctx context.Context) (func(), error) {
 		Msg("listening")
 
 	if err := s.startOtel(ctx); err != nil {
-		return nil, fmt.Errorf("NewServer: %w", err)
+		return nil, fmt.Errorf("failed to start otel: %w", err)
 	}
 
 	serverCtx, serverStopCtx := s.startHTTPServer()
 
 	if err := s.startGRPCServer(); err != nil {
-		log.Error().Err(err).Msgf("failed to start grpc server: %s", err)
-
-		return nil, fmt.Errorf("%w", err)
+		return nil, fmt.Errorf("failed to start grpc server: %w", err)
 	}
 
 	s.shutdownFuncs = append(s.shutdownFuncs, &shutdownFunc{

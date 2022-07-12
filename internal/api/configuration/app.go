@@ -27,4 +27,16 @@ type Config struct {
 			Port int    `yaml:"port"`
 		} `yaml:"collector"`
 	} `yaml:"observability"`
+	DB Database `yaml:"db"`
+}
+
+type Database struct {
+	Host         string        `yaml:"host"`
+	Port         string        `yaml:"port"`
+	User         string        `yaml:"user"`
+	Password     string        `yaml:"password"`
+	Database     string        `yaml:"database"`
+	MaxConns     int32         `yaml:"maxConns"`
+	MaxIdleConns int32         `yaml:"maxIdleConns"`
+	MaxLifeTime  time.Duration `yaml:"maxLifeTime"`
 }
