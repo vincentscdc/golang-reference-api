@@ -1,6 +1,19 @@
-## Unreleased (21c8d26..360c887)
+## Unreleased (83b9d7a..fe2334e)
+#### Bug Fixes
+- spacing - (fe2334e) - Vincent Serpoul
+- remove xz-utils version and make the two dockerfiles closer to eachother - (a0eabe0) - Vincent Serpoul
+- use correct deployment env var (#88) - (83b9d7a) - claire-tjq
+#### Features
+- split upx in a different compressor step - (f1d3adb) - Vincent Serpoul
+- implement usage of golang-common/database/pginit (#86) - (791af4d) - BennTayCDC
+
+- - -
+
+## Unreleased (21c8d26..a0f39c7)
 #### Bug Fixes
 - update to handlerwrap/v2 (#85) - (dd64f25) - vincentscdc
+#### Continuous Integration
+- deploy tag v2022.07.08.1035 to adev - (a0f39c7) - Vincent Serpoul
 #### Features
 - **(dockertest)** add dockertest in ci for unit tests with test db (#56) - (946e0b2) - jonathanyang-cryptocom
 - read github username and personal access key from local file (#82) - (123ab59) - kevinchiutw
@@ -8,6 +21,7 @@
 - add otel into grpc (#61) - (21c8d26) - stanley hsieh
 #### Miscellaneous Chores
 - **(deps)** upgrade deps - (360c887) - Vincent Serpoul
+- update CHANGELOG.md for v2022.07.04.1640 - (318d34e) - Vincent Serpoul
 #### Refactoring
 - **(ci)** parameterize app name (#76) - (9595f7a) - BennTayCDC
 - Use useruuidmiddleware in go common (#80) - (c89e219) - gaston-chiu
