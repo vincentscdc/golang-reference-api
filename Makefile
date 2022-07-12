@@ -102,6 +102,7 @@ docker-build-local: ## docker build locally, works on m1 macs
 			echo "$$GITHUB_USER $$GITHUB_PERSONAL_ACCESS_TOKEN" > $(GITHUB_SECRET_FILE); \
 			printf "\nYour Github username and personal access token are saved in the \033[0;31m$(GITHUB_SECRET_FILE)\033[0m file.\n"; \
 		fi && \
+	DOCKER_BUILDKIT=1 \
 	docker build \
 		-f Dockerfile.local \
 		-t $(APP_NAME) \
