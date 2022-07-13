@@ -19,8 +19,8 @@ import (
 
 	"golangreferenceapi/internal/payments/common"
 	"golangreferenceapi/internal/payments/mock/servicemock"
-	"golangreferenceapi/internal/payments/port/rest"
 	"golangreferenceapi/internal/payments/service"
+	"golangreferenceapi/internal/payments/transport/rest"
 )
 
 func Test_createPendingPaymentPlanHandlerInputError(t *testing.T) {

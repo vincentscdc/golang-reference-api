@@ -13,8 +13,8 @@ import (
 	"github.com/rs/zerolog"
 
 	"golangreferenceapi/internal/payments/mock/servicemock"
-	"golangreferenceapi/internal/payments/port/rest"
 	"golangreferenceapi/internal/payments/service"
+	"golangreferenceapi/internal/payments/transport/rest"
 )
 
 func TestAddRoutes(t *testing.T) {

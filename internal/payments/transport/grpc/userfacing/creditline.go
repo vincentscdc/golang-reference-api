@@ -3,7 +3,7 @@ package userfacing
 import (
 	"context"
 
-	"golangreferenceapi/internal/payments/port/grpc/bnplapi/creditline/v1"
+	"golangreferenceapi/internal/payments/transport/grpc/bnplapi/creditline/v1"
 )
 
 var _ creditline.PayLaterServiceServer = (*PayLaterServer)(nil)

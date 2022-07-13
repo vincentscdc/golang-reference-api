@@ -3,8 +3,8 @@ package internalfacing
 import (
 	"net/http"
 
-	"golangreferenceapi/internal/payments/port/rest"
 	"golangreferenceapi/internal/payments/service"
+	"golangreferenceapi/internal/payments/transport/rest"
 
 	"github.com/gofrs/uuid"
 	"github.com/monacohq/golang-common/transport/http/handlerwrap/v2"

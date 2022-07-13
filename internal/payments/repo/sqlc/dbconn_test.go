@@ -14,29 +14,41 @@ func Test_NewRepo(t *testing.T) {
 
 	ctx := context.Background()
 
-	cfg := configuration.Database{
-		Host:         "localhost",
-		Port:         strings.Split(getHostPort(testRefDockertestResource, "5432/tcp"), ":")[1],
-		User:         "postgres",
-		Password:     "postgres",
-		Database:     "datawarehouse",
-		MaxConns:     10,
-		MaxIdleConns: 10,
-		MaxLifeTime:  1 * time.Minute,
-	}
-
 	tests := []struct {
 		name    string
 		cfg     *configuration.Database
 		wantErr bool
 	}{
 		{
-			name:    "happy path",
-			cfg:     &cfg,
+			name: "happy path",
+			cfg: &configuration.Database{
+				Host:         "localhost",
+				Port:         strings.Split(getHostPort(testRefDockertestResource, "5432/tcp"), ":")[1],
+				User:         "postgres",
+				Password:     "postgres",
+				Database:     "datawarehouse",
+				MaxConns:     10,
+				MaxIdleConns: 10,
+				MaxLifeTime:  1 * time.Minute,
+			},
 			wantErr: false,
 		},
 		{
-			name:    "unhappy path",
+			name: "unhappy path - fail to init PGInit",
+			cfg: &configuration.Database{
+				Host:         "wrong:localhost",
+				Port:         "wrong/port",
+				User:         "postgres",
+				Password:     "postgres",
+				Database:     "datawarehouse",
+				MaxConns:     10,
+				MaxIdleConns: 10,
+				MaxLifeTime:  1 * time.Minute,
+			},
+			wantErr: true,
+		},
+		{
+			name:    "unhappy path - fail to init conn pool",
 			cfg:     &configuration.Database{},
 			wantErr: true,
 		},

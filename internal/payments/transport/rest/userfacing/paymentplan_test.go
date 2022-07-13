@@ -10,8 +10,8 @@ import (
 
 	"golangreferenceapi/internal/payments/common"
 	"golangreferenceapi/internal/payments/mock/servicemock"
-	"golangreferenceapi/internal/payments/port/rest"
 	"golangreferenceapi/internal/payments/service"
+	"golangreferenceapi/internal/payments/transport/rest"
 
 	"github.com/monacohq/golang-common/transport/http/middleware/cryptouseruuid"
 

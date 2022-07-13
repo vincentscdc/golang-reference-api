@@ -48,7 +48,7 @@ func (s *API) startHTTPServer() (context.Context, context.CancelFunc) {
 	// Start http server
 	go func() {
 		if err := s.httpServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			log.Error().Err(err).Msg("")
+			log.Error().Err(err).Msg("http server failed to listen and serve")
 		}
 
 		// Wait for server context to be stopped
@@ -78,8 +78,6 @@ func (s *API) startGRPCServer() error {
 		err = s.grpcServer.Serve(lis)
 		if err != nil {
 			log.Error().Err(err).Msg("failed to serve grpc server")
-
-			return
 		}
 	}()
 
