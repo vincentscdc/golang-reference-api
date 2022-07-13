@@ -2,9 +2,9 @@ package sqlc
 
 import (
 	"context"
-	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"net/url"
 	"os"
@@ -22,11 +22,12 @@ import (
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	"github.com/golang-migrate/migrate/v4/source/iofs"
-	"github.com/golang/mock/gomock"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/monacohq/golang-common/database/pginit"
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
+	"github.com/rs/zerolog"
 	"go.uber.org/goleak"
 )
 
@@ -36,6 +37,7 @@ var (
 	testRefDockertestResource *dockertest.Resource
 	testRefPoolConn           *pgxpool.Pool
 	testRefRepo               *Repo
+	testQuerier               *db.Queries
 )
 
 func TestMain(m *testing.M) {
@@ -78,9 +80,32 @@ func TestMain(m *testing.M) {
 
 	testRefDatabaseURL := fmt.Sprintf("postgres://postgres:%s@%s/datawarehouse?sslmode=disable", "postgres", getHostPort(testRefDockertestResource, "5432/tcp"))
 
+	logger := zerolog.New(io.Discard)
+
+	pgi, err := pginit.New(
+		&pginit.Config{
+			Host:         "localhost",
+			Port:         strings.Split(getHostPort(testRefDockertestResource, "5432/tcp"), ":")[1],
+			User:         "postgres",
+			Password:     "postgres",
+			Database:     "datawarehouse",
+			MaxConns:     10,
+			MaxIdleConns: 10,
+			MaxLifeTime:  1 * time.Minute,
+		},
+		pginit.WithLogLevel(zerolog.WarnLevel),
+		pginit.WithLogger(&logger, "request-id"),
+		pginit.WithDecimalType(),
+		pginit.WithUUIDType(),
+	)
+	if err != nil {
+		log.Fatalf("Could not init pginit: %s", err)
+	}
+
 	if err = testRefDockertestPool.Retry(func() error {
 		var poolErr error
-		testRefPoolConn, poolErr = pgxpool.Connect(context.Background(), testRefDatabaseURL)
+		testRefPoolConn, poolErr = pgi.ConnPool(context.Background())
+
 		if poolErr != nil {
 			return poolErr
 		}
@@ -99,8 +124,8 @@ func TestMain(m *testing.M) {
 		log.Fatalf("Could not run migrations: %s", err)
 	}
 
-	querier := db.New(testRefPoolConn)
-	testRefRepo = NewSQLCRepository(querier)
+	testQuerier = db.New(testRefPoolConn)
+	testRefRepo = NewSQLCRepository(testQuerier)
 
 	code := m.Run()
 
@@ -126,70 +151,64 @@ func TestNewSQLCRepository(t *testing.T) {
 func TestSQLCRepo_CreatePaymentPlan(t *testing.T) {
 	t.Parallel()
 
-	// mock setup
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	makeMockQuerier := func(result *db.CreatePaymentPlanRow, err error) db.Querier {
-		mockedQuerier := db.NewMockQuerier(ctrl)
-		mockedQuerier.EXPECT().CreatePaymentPlan(gomock.Any(), gomock.Any()).Return(result, err).AnyTimes()
-
-		return mockedQuerier
-	}
-
-	// actual db setup
-	dbConn, dbURL, err := createNewDatabaseAndConn(testRefDockertestResource, testRefPoolConn, "create_payment_plan_db")
-	if err != nil {
-		t.Fatalf("Failed to create new database: %s", err)
-	}
-
-	// run migrations
-	err = runMigrations(dbURL)
-	if err != nil {
-		t.Fatalf("Failed to run migrations: %s", err)
-	}
-
-	querier := db.New(dbConn)
-	amount := decimal.New(1098, 2)
+	userUUID, _ := uuid.NewV4()
 
 	testcases := []struct {
-		testName      string
-		paramArg      *payments.CreatePlanParams
-		mockedQuerier db.Querier
-		expectErr     bool
+		testName  string
+		paramArg  *payments.CreatePlanParams
+		expectErr bool
+		expectRow *payments.Plan
 	}{
 		{
 			testName: "happy",
 			paramArg: &payments.CreatePlanParams{
-				UserID:   uuid.UUID{},
+				UserID:   userUUID,
 				Currency: "usdc",
-				Amount:   *amount,
+				Amount:   *decimal.New(1098, 2),
 				Status:   "pending",
 			},
-			mockedQuerier: makeMockQuerier(&db.CreatePaymentPlanRow{}, nil),
-			expectErr:     false,
+			expectErr: false,
+			expectRow: &payments.Plan{
+				UserID:   userUUID,
+				Currency: "usdc",
+				Amount:   *decimal.New(1098, 2),
+				Status:   "pending",
+			},
 		},
 		{
-			testName: "error - CreatePaymentPlan db error",
+			testName: "currency field nil",
 			paramArg: &payments.CreatePlanParams{
-				UserID:   uuid.UUID{},
-				Currency: "usdc",
-				Amount:   *amount,
-				Status:   "pending",
+				UserID: userUUID,
+				Amount: *decimal.New(1098, 2),
+				Status: "pending",
 			},
-			mockedQuerier: makeMockQuerier(nil, errors.New("some db err")),
-			expectErr:     true,
+			expectErr: true,
 		},
 		{
-			testName: "error - CreatePaymentPlan db error",
+			testName: "negative amount",
 			paramArg: &payments.CreatePlanParams{
-				UserID:   uuid.UUID{},
+				UserID:   userUUID,
 				Currency: "usdc",
-				Amount:   *amount,
+				Amount:   *decimal.New(-1099, 2),
 				Status:   "pending",
 			},
-			mockedQuerier: makeMockQuerier(nil, errors.New("some err")),
-			expectErr:     true,
+			expectErr: true,
+		},
+		{
+			testName: "decimal wrong precision",
+			paramArg: &payments.CreatePlanParams{
+				UserID:   userUUID,
+				Currency: "usdc",
+				Amount:   *decimal.New(31485937839476927, 16),
+				Status:   "pending",
+			},
+			expectErr: false,
+			expectRow: &payments.Plan{
+				UserID:   userUUID,
+				Currency: "usdc",
+				Amount:   *decimal.New(31485937839476927, 16),
+				Status:   "pending",
+			},
 		},
 	}
 
@@ -199,15 +218,73 @@ func TestSQLCRepo_CreatePaymentPlan(t *testing.T) {
 		t.Run(testcase.testName, func(t *testing.T) {
 			t.Parallel()
 
-			var repo *Repo
+			pp, err := testRefRepo.CreatePaymentPlan(context.Background(), testcase.paramArg)
+			if testcase.expectErr && err == nil {
+				t.Errorf("expects err but nil returned")
+			}
+			if err != nil {
+				if !testcase.expectErr {
+					t.Errorf("expect no err but err returned")
+				}
 
-			if testcase.mockedQuerier == nil {
-				repo = NewSQLCRepository(querier)
-			} else {
-				repo = NewSQLCRepository(testcase.mockedQuerier)
+				return
 			}
 
-			_, err := repo.CreatePaymentPlan(context.Background(), testcase.paramArg)
+			if pp.ID == uuid.Nil {
+				t.Errorf("expect uuid but nil returned")
+			}
+
+			if pp.UserID != testcase.expectRow.UserID {
+				t.Errorf("wrong expected user id: got %v, want %v", testcase.expectRow.UserID, pp.UserID)
+			}
+
+			if pp.Currency != testcase.expectRow.Currency {
+				t.Errorf("wrong expected currency: got %v, want %v", testcase.expectRow.Currency, pp.Currency)
+			}
+
+			if pp.Amount.Cmp(&testcase.expectRow.Amount) != 0 {
+				t.Errorf("wrong expected amount: got %v, want %v", testcase.expectRow.Amount, pp.Amount)
+			}
+
+			if pp.Status != testcase.expectRow.Status {
+				t.Errorf("wrong expected status: got %v, want %v", testcase.expectRow.Status, pp.Status)
+			}
+		})
+	}
+}
+
+func TestSQLCRepo_CreatePaymentPlan_ExistingID(t *testing.T) {
+	t.Parallel()
+
+	userUUID, _ := uuid.NewV4()
+
+	existingPlan := createRandomPaymentPlan(t, uuid.Must(uuid.NewV4()))
+
+	testcases := []struct {
+		testName  string
+		paramArg  *db.CreatePaymentPlanParams
+		expectErr bool
+		expectRow *db.CreatePaymentPlanParams
+	}{
+		{
+			testName: "plan id already exists",
+			paramArg: &db.CreatePaymentPlanParams{
+				ID:     existingPlan.ID,
+				UserID: userUUID,
+				Amount: *decimal.New(1098, 2),
+				Status: "pending",
+			},
+			expectErr: true,
+		},
+	}
+
+	for _, testcase := range testcases {
+		testcase := testcase
+
+		t.Run(testcase.testName, func(t *testing.T) {
+			t.Parallel()
+
+			_, err := testQuerier.CreatePaymentPlan(context.Background(), testcase.paramArg)
 			if testcase.expectErr && err == nil {
 				t.Errorf("expects err but nil returned")
 			}
@@ -215,52 +292,25 @@ func TestSQLCRepo_CreatePaymentPlan(t *testing.T) {
 	}
 }
 
-func TestSQLCRepo_ListPaymentPlansByUserID(t *testing.T) {
+func TestSQLCRepo_ListPaymentPlansByUserID_ListOne(t *testing.T) {
 	t.Parallel()
 
-	// mock setup
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	// actual db setup
-	dbConn, dbURL, err := createNewDatabaseAndConn(testRefDockertestResource, testRefPoolConn, "list_payment_plans_by_userid_db")
-	if err != nil {
-		t.Fatalf("Failed to create new database: %s", err)
-	}
-
-	// run migrations
-	err = runMigrations(dbURL)
-	if err != nil {
-		t.Fatalf("Failed to run migrations: %s", err)
-	}
-
-	userUUID := uuid.Must(uuid.NewV4())
-
-	querier := db.New(dbConn)
-	makeMockQuerier := func(result []*db.ListPaymentPlansByUserIDRow, err error) db.Querier {
-		mockedQuerier := db.NewMockQuerier(ctrl)
-		mockedQuerier.EXPECT().ListPaymentPlansByUserID(gomock.Any(), gomock.Any()).Return(result, err).AnyTimes()
-
-		return mockedQuerier
-	}
+	existingPlan := createRandomPaymentPlan(t, uuid.Must(uuid.NewV4()))
 
 	testcases := []struct {
-		testName      string
-		paramUserID   uuid.UUID
-		mockedQuerier db.Querier
-		expectErr     bool
+		testName          string
+		paramUserID       uuid.UUID
+		expectEmptyResult bool
 	}{
 		{
-			testName:      "happy",
-			paramUserID:   userUUID,
-			mockedQuerier: makeMockQuerier([]*db.ListPaymentPlansByUserIDRow{{}}, nil),
-			expectErr:     false,
+			testName:          "happy",
+			paramUserID:       existingPlan.UserID,
+			expectEmptyResult: false,
 		},
 		{
-			testName:      "error - ListPaymentPlansByUserID failed",
-			paramUserID:   userUUID,
-			mockedQuerier: makeMockQuerier(nil, errors.New("some db err")),
-			expectErr:     true,
+			testName:          "not found",
+			paramUserID:       uuid.Must(uuid.NewV4()),
+			expectEmptyResult: true,
 		},
 	}
 
@@ -270,17 +320,77 @@ func TestSQLCRepo_ListPaymentPlansByUserID(t *testing.T) {
 		t.Run(testcase.testName, func(t *testing.T) {
 			t.Parallel()
 
-			var repo *Repo
-
-			if testcase.mockedQuerier == nil {
-				repo = NewSQLCRepository(querier)
-			} else {
-				repo = NewSQLCRepository(testcase.mockedQuerier)
+			plans, err := testRefRepo.ListPaymentPlansByUserID(context.Background(), testcase.paramUserID)
+			if err != nil {
+				t.Fatalf("list payment plans err: %v", err)
 			}
 
-			_, err := repo.ListPaymentPlansByUserID(context.Background(), testcase.paramUserID)
-			if testcase.expectErr && err == nil {
-				t.Errorf("expects err but nil returned")
+			if len(plans) < 1 {
+				if !testcase.expectEmptyResult {
+					t.Errorf("expect results but empty results returned: %v", plans)
+				}
+
+				return
+			}
+
+			if existingPlan.ID != plans[0].ID {
+				t.Errorf("wrong expected id: got %v, want %v", plans[0].ID, existingPlan.ID)
+			}
+
+			if existingPlan.UserID != plans[0].UserID {
+				t.Errorf("wrong expected user id: got %v, want %v", plans[0].UserID, existingPlan.UserID)
+			}
+
+			if existingPlan.Currency != plans[0].Currency {
+				t.Errorf("wrong expected currency: got %v, want %v", plans[0].Currency, existingPlan.Currency)
+			}
+
+			if existingPlan.Amount.Cmp(&plans[0].Amount) != 0 {
+				t.Errorf("wrong expected amount: got %v, want %v", plans[0].Amount, existingPlan.Amount)
+			}
+
+			if existingPlan.Status != plans[0].Status {
+				t.Errorf("wrong expected status: got %v, want %v", plans[0].Status, existingPlan.Status)
+			}
+		})
+	}
+}
+
+func TestSQLCRepo_ListPaymentPlansByUserID_ListMany(t *testing.T) {
+	t.Parallel()
+
+	n := 10
+	userID := uuid.Must(uuid.NewV4())
+
+	for i := 0; i < n; i++ {
+		createRandomPaymentPlan(t, userID)
+	}
+
+	testcases := []struct {
+		testName        string
+		paramUserID     uuid.UUID
+		expectResultLen int
+	}{
+		{
+			testName:        "happy",
+			paramUserID:     userID,
+			expectResultLen: n,
+		},
+	}
+
+	for _, testcase := range testcases {
+		testcase := testcase
+
+		t.Run(testcase.testName, func(t *testing.T) {
+			t.Parallel()
+
+			plans, err := testRefRepo.ListPaymentPlansByUserID(context.Background(), testcase.paramUserID)
+			if err != nil {
+				t.Fatalf("list payment plans err: %v", err)
+			}
+
+			if len(plans) != testcase.expectResultLen {
+				t.Errorf("expect %v results but %v results returned", n, len(plans))
 			}
 		})
 	}
@@ -289,70 +399,67 @@ func TestSQLCRepo_ListPaymentPlansByUserID(t *testing.T) {
 func TestSQLCRepo_CreatePaymentInstallment(t *testing.T) {
 	t.Parallel()
 
-	// mock setup
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	// actual db setup
-	dbConn, dbURL, err := createNewDatabaseAndConn(testRefDockertestResource, testRefPoolConn, "create_payment_installments_db")
-	if err != nil {
-		t.Fatalf("Failed to create new database: %s", err)
-	}
-
-	// run migrations
-	err = runMigrations(dbURL)
-	if err != nil {
-		t.Fatalf("Failed to run migrations: %s", err)
-	}
-
-	querier := db.New(dbConn)
-	amount := decimal.New(1098, 2)
-
 	// create dependent payment entity
-	createdPlan, _ := querier.CreatePaymentPlan(context.Background(), &db.CreatePaymentPlanParams{
-		ID:       uuid.UUID{},
-		UserID:   uuid.UUID{},
-		Currency: "usdc",
-		Amount:   *amount,
-		Status:   "pending",
-	})
-
-	makeMockQuerier := func(result *db.CreatePaymentInstallmentsRow, err error) db.Querier {
-		mockedQuerier := db.NewMockQuerier(ctrl)
-		mockedQuerier.EXPECT().CreatePaymentInstallments(gomock.Any(), gomock.Any()).Return(result, err).AnyTimes()
-
-		return mockedQuerier
-	}
+	createdPlan := createRandomPaymentPlan(t, uuid.Must(uuid.NewV4()))
 
 	testcases := []struct {
-		testName      string
-		paramArg      *payments.CreateInstallmentParams
-		mockedQuerier db.Querier
-		expectErr     bool
+		testName  string
+		paramArg  *payments.CreateInstallmentParams
+		expectErr bool
 	}{
 		{
 			testName: "happy",
 			paramArg: &payments.CreateInstallmentParams{
 				PaymentPlanID: createdPlan.ID,
 				Currency:      "usdc",
-				Amount:        *amount,
-				DueAt:         time.Time{},
+				Amount:        *decimal.New(1098, 2),
+				DueAt:         time.Now().UTC().Truncate(time.Microsecond),
 				Status:        "pending",
 			},
-			mockedQuerier: makeMockQuerier(&db.CreatePaymentInstallmentsRow{}, nil),
-			expectErr:     false,
+			expectErr: false,
 		},
 		{
-			testName: "error - CreatePaymentInstallments failed",
+			testName: "payment plan does not exist",
 			paramArg: &payments.CreateInstallmentParams{
-				PaymentPlanID: uuid.UUID{},
+				PaymentPlanID: uuid.Must(uuid.NewV4()),
 				Currency:      "usdc",
-				Amount:        *amount,
-				DueAt:         time.Time{},
+				Amount:        *decimal.New(1098, 2),
+				DueAt:         time.Now().UTC().Truncate(time.Microsecond),
 				Status:        "pending",
 			},
-			mockedQuerier: makeMockQuerier(nil, errors.New("some err")),
-			expectErr:     true,
+			expectErr: true,
+		},
+		{
+			testName: "amount negative",
+			paramArg: &payments.CreateInstallmentParams{
+				PaymentPlanID: createdPlan.ID,
+				Currency:      "usdc",
+				Amount:        *decimal.New(-1098, 2),
+				DueAt:         time.Now().UTC().Truncate(time.Microsecond),
+				Status:        "pending",
+			},
+			expectErr: true,
+		},
+		{
+			testName: "status field nil",
+			paramArg: &payments.CreateInstallmentParams{
+				PaymentPlanID: createdPlan.ID,
+				Currency:      "usdc",
+				Amount:        *decimal.New(1098, 2),
+				DueAt:         time.Now().UTC().Truncate(time.Microsecond),
+			},
+			expectErr: true,
+		},
+		{
+			testName: "decimal wrong precision",
+			paramArg: &payments.CreateInstallmentParams{
+				PaymentPlanID: createdPlan.ID,
+				Currency:      "usdc",
+				Amount:        *decimal.New(31485937839476927, 16),
+				DueAt:         time.Now().UTC().Truncate(time.Microsecond),
+				Status:        "pending",
+			},
+			expectErr: false,
 		},
 	}
 
@@ -362,15 +469,73 @@ func TestSQLCRepo_CreatePaymentInstallment(t *testing.T) {
 		t.Run(testcase.testName, func(t *testing.T) {
 			t.Parallel()
 
-			var repo *Repo
+			ppi, err := testRefRepo.CreatePaymentInstallment(context.Background(), testcase.paramArg)
+			if testcase.expectErr && err == nil {
+				t.Errorf("expects err but nil returned")
+			}
+			if err != nil {
+				if !testcase.expectErr {
+					t.Errorf("expect no err but err returned")
+				}
 
-			if testcase.mockedQuerier == nil {
-				repo = NewSQLCRepository(querier)
-			} else {
-				repo = NewSQLCRepository(testcase.mockedQuerier)
+				return
+			}
+			if ppi.ID == uuid.Nil {
+				t.Errorf("expect uuid but nil returned")
 			}
 
-			_, err := repo.CreatePaymentInstallment(context.Background(), testcase.paramArg)
+			if ppi.Currency != testcase.paramArg.Currency {
+				t.Errorf("wrong expected currency: got %v, want %v", testcase.paramArg.Currency, ppi.Currency)
+			}
+
+			if ppi.Amount.Cmp(&testcase.paramArg.Amount) != 0 {
+				t.Errorf("wrong expected amount: got %v, want %v", testcase.paramArg.Amount, ppi.Amount)
+			}
+
+			if !ppi.DueAt.Equal(testcase.paramArg.DueAt) {
+				t.Errorf("wrong expected due at: got %v, want %v", testcase.paramArg.DueAt, ppi.DueAt)
+			}
+
+			if ppi.Status != testcase.paramArg.Status {
+				t.Errorf("wrong expected status: got %v, want %v", testcase.paramArg.Status, ppi.Status)
+			}
+		})
+	}
+}
+
+func TestSQLCRepo_CreatePaymentInstallment_ExistingID(t *testing.T) {
+	t.Parallel()
+
+	// create dependent payment entity
+	createdPlan := createRandomPaymentPlan(t, uuid.Must(uuid.NewV4()))
+	createdInstallment := createRandomPaymentPlanInstallment(t, createdPlan.ID)
+
+	testcases := []struct {
+		testName  string
+		paramArg  *db.CreatePaymentInstallmentsParams
+		expectErr bool
+	}{
+		{
+			testName: "payment plan id already exists",
+			paramArg: &db.CreatePaymentInstallmentsParams{
+				ID:            createdInstallment.ID,
+				PaymentPlanID: createdPlan.ID,
+				Currency:      "usdc",
+				Amount:        *decimal.New(1098, 2),
+				DueAt:         time.Now().UTC().Truncate(time.Microsecond),
+				Status:        "pending",
+			},
+			expectErr: true,
+		},
+	}
+
+	for _, testcase := range testcases {
+		testcase := testcase
+
+		t.Run(testcase.testName, func(t *testing.T) {
+			t.Parallel()
+
+			_, err := testQuerier.CreatePaymentInstallments(context.Background(), testcase.paramArg)
 			if testcase.expectErr && err == nil {
 				t.Errorf("expects err but nil returned")
 			}
@@ -378,61 +543,26 @@ func TestSQLCRepo_CreatePaymentInstallment(t *testing.T) {
 	}
 }
 
-func TestSQLCRepo_ListPaymentInstallmentsByPlanID(t *testing.T) {
+func TestSQLCRepo_ListPaymentInstallmentsByPlanID_ListOne(t *testing.T) {
 	t.Parallel()
 
-	// mock setup
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	// actual db setup
-	dbConn, dbURL, err := createNewDatabaseAndConn(testRefDockertestResource, testRefPoolConn, "list_payment_installments_by_planid_db")
-	if err != nil {
-		t.Fatalf("Failed to create new database: %s", err)
-	}
-
-	// run migrations
-	err = runMigrations(dbURL)
-	if err != nil {
-		t.Fatalf("Failed to run migrations: %s", err)
-	}
-
-	querier := db.New(dbConn)
-	amount := decimal.New(1098, 2)
-
-	// create dependent payment entity
-	createdPlan, _ := querier.CreatePaymentPlan(context.Background(), &db.CreatePaymentPlanParams{
-		ID:       uuid.UUID{},
-		UserID:   uuid.UUID{},
-		Currency: "usdc",
-		Amount:   *amount,
-		Status:   "pending",
-	})
-
-	makeMockQuerier := func(result []*db.ListPaymentInstallmentsByPlanIDRow, err error) db.Querier {
-		mockedQuerier := db.NewMockQuerier(ctrl)
-		mockedQuerier.EXPECT().ListPaymentInstallmentsByPlanID(gomock.Any(), gomock.Any()).Return(result, err).AnyTimes()
-
-		return mockedQuerier
-	}
+	createdPlan := createRandomPaymentPlan(t, uuid.Must(uuid.NewV4()))
+	createdInstallment := createRandomPaymentPlanInstallment(t, createdPlan.ID)
 
 	testcases := []struct {
-		testName      string
-		paramPlanID   uuid.UUID
-		mockedQuerier db.Querier
-		expectErr     bool
+		testName          string
+		paramPlanID       uuid.UUID
+		expectEmptyResult bool
 	}{
 		{
-			testName:      "happy",
-			paramPlanID:   createdPlan.ID,
-			mockedQuerier: makeMockQuerier([]*db.ListPaymentInstallmentsByPlanIDRow{{}}, nil),
-			expectErr:     false,
+			testName:          "happy",
+			paramPlanID:       createdPlan.ID,
+			expectEmptyResult: false,
 		},
 		{
-			testName:      "error - ListPaymentInstallmentsByPlanID failed",
-			paramPlanID:   createdPlan.ID,
-			mockedQuerier: makeMockQuerier(nil, errors.New("some db err")),
-			expectErr:     true,
+			testName:          "not found",
+			paramPlanID:       uuid.Must(uuid.NewV4()),
+			expectEmptyResult: true,
 		},
 	}
 
@@ -442,17 +572,74 @@ func TestSQLCRepo_ListPaymentInstallmentsByPlanID(t *testing.T) {
 		t.Run(testcase.testName, func(t *testing.T) {
 			t.Parallel()
 
-			var repo *Repo
-
-			if testcase.mockedQuerier == nil {
-				repo = NewSQLCRepository(querier)
-			} else {
-				repo = NewSQLCRepository(testcase.mockedQuerier)
+			installments, err := testRefRepo.ListPaymentInstallmentsByPlanID(context.Background(), testcase.paramPlanID)
+			if err != nil {
+				t.Fatalf("list payment plans err: %v", err)
 			}
 
-			_, err := repo.ListPaymentInstallmentsByPlanID(context.Background(), testcase.paramPlanID)
-			if testcase.expectErr && err == nil {
-				t.Errorf("expects err but nil returned")
+			if len(installments) < 1 {
+				if !testcase.expectEmptyResult {
+					t.Errorf("expect results but empty results returned: %v", installments)
+				}
+
+				return
+			}
+
+			if createdInstallment.Currency != installments[0].Currency {
+				t.Errorf("wrong expected currency: got %v, want %v", installments[0].Currency, createdInstallment.Currency)
+			}
+
+			if createdInstallment.Amount.Cmp(&installments[0].Amount) != 0 {
+				t.Errorf("wrong expected amount: got %v, want %v", installments[0].Amount, createdInstallment.Amount)
+			}
+
+			if !createdInstallment.DueAt.Equal(installments[0].DueAt) {
+				t.Errorf("wrong expected user id: got %v, want %v", installments[0].DueAt, createdInstallment.DueAt)
+			}
+
+			if createdInstallment.Status != installments[0].Status {
+				t.Errorf("wrong expected status: got %v, want %v", installments[0].Status, createdInstallment.Status)
+			}
+		})
+	}
+}
+
+func TestSQLCRepo_ListPaymentInstallmentsByPlanID_ListMany(t *testing.T) {
+	t.Parallel()
+
+	n := 10
+	userID := uuid.Must(uuid.NewV4())
+	plan := createRandomPaymentPlan(t, userID)
+
+	for i := 0; i < n; i++ {
+		createRandomPaymentPlanInstallment(t, plan.ID)
+	}
+
+	testcases := []struct {
+		testName        string
+		paramPlanID     uuid.UUID
+		expectResultLen int
+	}{
+		{
+			testName:        "happy",
+			paramPlanID:     plan.ID,
+			expectResultLen: n,
+		},
+	}
+
+	for _, testcase := range testcases {
+		testcase := testcase
+
+		t.Run(testcase.testName, func(t *testing.T) {
+			t.Parallel()
+
+			installments, err := testRefRepo.ListPaymentInstallmentsByPlanID(context.Background(), testcase.paramPlanID)
+			if err != nil {
+				t.Fatalf("list payment plans err: %v", err)
+			}
+
+			if len(installments) != testcase.expectResultLen {
+				t.Errorf("expect %v results but %v results returned", n, len(installments))
 			}
 		})
 	}
@@ -568,6 +755,39 @@ func TestSQLCRepo_newInstallmentFromDBEntity(t *testing.T) {
 	}
 }
 
+func createRandomPaymentPlan(t *testing.T, userID uuid.UUID) *payments.Plan {
+	t.Helper()
+
+	plan, err := testRefRepo.CreatePaymentPlan(context.Background(), &payments.CreatePlanParams{
+		UserID:   userID,
+		Currency: "usdc",
+		Amount:   *decimal.New(1098, 2),
+		Status:   "pending",
+	})
+	if err != nil {
+		t.Fatalf("fail to create payment plan: %v", err)
+	}
+
+	return plan
+}
+
+func createRandomPaymentPlanInstallment(t *testing.T, id uuid.UUID) *payments.Installment {
+	t.Helper()
+
+	plan, err := testRefRepo.CreatePaymentInstallment(context.Background(), &payments.CreateInstallmentParams{
+		PaymentPlanID: id,
+		Currency:      "usdc",
+		Amount:        *decimal.New(1098, 2),
+		DueAt:         time.Now().UTC().Truncate(time.Microsecond),
+		Status:        "pending",
+	})
+	if err != nil {
+		t.Fatalf("fail to create installment: %v", err)
+	}
+
+	return plan
+}
+
 func getHostPort(resource *dockertest.Resource, id string) string {
 	dockerURL := os.Getenv("DOCKER_HOST")
 	if dockerURL == "" {
@@ -585,22 +805,6 @@ func getHostPort(resource *dockertest.Resource, id string) string {
 	}
 
 	return u.Hostname() + ":" + resource.GetPort(id)
-}
-
-func createNewDatabaseAndConn(resource *dockertest.Resource, dbConn *pgxpool.Pool, dbName string) (*pgxpool.Pool, string, error) {
-	_, err := dbConn.Exec(context.Background(), "CREATE DATABASE "+dbName+";")
-	if err != nil {
-		return nil, "", err
-	}
-
-	dbURL := fmt.Sprintf("postgres://postgres:%s@%s/%s?sslmode=disable", "postgres", getHostPort(resource, "5432/tcp"), dbName)
-
-	newConn, err := pgxpool.Connect(context.Background(), dbURL)
-	if err != nil {
-		return nil, "", err
-	}
-
-	return newConn, dbURL, nil
 }
 
 func runMigrations(dbURL string) error {

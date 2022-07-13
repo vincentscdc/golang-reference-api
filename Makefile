@@ -194,7 +194,7 @@ sql-gen-sqlboiler:
 	)
 
 sqlc:
-	sqlc generate -f ./database/sqlc.yaml && mockgen -source=./internal/db/querier.go -destination=./internal/db/mockquerier.go -package=db
+	sqlc generate -f ./database/sqlc.yaml
 
 migration-local-dev:
 	@( \
