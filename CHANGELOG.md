@@ -1,11 +1,24 @@
-## Unreleased (83b9d7a..fe2334e)
+## Unreleased (4c2e2ec..35acc97)
+#### Refactoring
+- rename port to transport (#94) - (35acc97) - BennTayCDC
+- general improvements (#91) - (4c2e2ec) - vincentscdc
+#### Tests
+- **(sqlc)** remove mock, add checks on returned data (#90) - (8628acd) - claire-tjq
+
+- - -
+
+## Unreleased (83b9d7a..c5a42c2)
 #### Bug Fixes
 - spacing - (fe2334e) - Vincent Serpoul
 - remove xz-utils version and make the two dockerfiles closer to eachother - (a0eabe0) - Vincent Serpoul
 - use correct deployment env var (#88) - (83b9d7a) - claire-tjq
+#### Continuous Integration
+- deploy tag v2022.07.12.1312 to adev - (c5a42c2) - Vincent Serpoul
 #### Features
 - split upx in a different compressor step - (f1d3adb) - Vincent Serpoul
 - implement usage of golang-common/database/pginit (#86) - (791af4d) - BennTayCDC
+#### Miscellaneous Chores
+- update CHANGELOG.md for v2022.07.08.1035 - (1644811) - Vincent Serpoul
 
 - - -
 
