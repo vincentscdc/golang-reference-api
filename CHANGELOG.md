@@ -1,4 +1,15 @@
-## Unreleased (4c2e2ec..35acc97)
+## Unreleased (dd9126f..a32f82b)
+#### Bug Fixes
+- migration to cluster EKS 1.22 dev - (a32f82b) - Vincent Serpoul
+- go version - (dd9126f) - Vincent Serpoul
+
+- - -
+
+## Unreleased (4c2e2ec..42e87b8)
+#### Continuous Integration
+- deploy tag v2022.07.13.2131 to adev - (42e87b8) - Vincent Serpoul
+#### Miscellaneous Chores
+- update CHANGELOG.md for v2022.07.12.1312 - (ba762b6) - Vincent Serpoul
 #### Refactoring
 - rename port to transport (#94) - (35acc97) - BennTayCDC
 - general improvements (#91) - (4c2e2ec) - vincentscdc
