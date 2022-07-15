@@ -87,7 +87,7 @@ jobs:
       - run:
           name: Apply kustomization
           command: |
-            kubectl kustomize deploy/<< parameters.kustomize-folder >> | kubectl -n $EKS_NAMESPACE apply -f -
+            kubectl kustomize deploy/<< parameters.kustomize-folder >> | kubectl apply -f -
 
 # Note: slack integration requires SLACK_ACCESS_TOKEN (has to be stored in circleci context) and SLACK_DEFAULT_CHANNEL (can be stored as either context or env variable)
   send-slack-changelog:
