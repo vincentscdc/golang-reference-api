@@ -12,7 +12,7 @@ commonLabels:
 images:
 - name: 3onaco/golang-reference-api
   newName: 929151461716.dkr.ecr.ap-southeast-1.amazonaws.com/app-golang-reference-api
-  newTag: v2022.07.15.1020
+  newTag: v2022.07.15.1029
 
 patchesStrategicMerge:
 - deployment-config.yaml
