@@ -101,7 +101,7 @@ release: changelog-gen changelog-commit deploy-dev ## create a new tag to releas
 CAL_VER := v$(shell date "+%Y.%m.%d.%H%M")
 PRODUCTION_YAML = deploy/apro-app-main/kustomization.yaml
 STAGING_YAML = deploy/asta-app-main/kustomization.yaml
-DEV_YAML = deploy/adev-app-main/kustomization.yaml
+DEV_YAML = deploy/adev-app-main-122/kustomization.yaml
 
 deploy-dev:
 	sed -i '' "s/newTag:.*/newTag: $(CAL_VER)/" $(DEV_YAML)
