@@ -174,7 +174,7 @@ workflows:
           name: dynamic-workflows
           base-revision: main
           mapping: |
-            deploy/adev-app-main/.* dev-changed true
+            deploy/adev-app-main-122/.* dev-changed true
             deploy/asta-app-main/.* sta-changed true
             deploy/apro-app-main/.* pro-changed true
             internal/docs/swagger.json api-changed true

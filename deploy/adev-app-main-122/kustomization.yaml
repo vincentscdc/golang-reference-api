@@ -1,0 +1,27 @@
+resources:
+- ../base
+
+namespace: dev-monaco
+
+nameSuffix: "-dev"
+
+commonLabels:
+  app.kubernetes.io/name: golang-reference-api
+  app.kubernetes.io/version: dev
+
+images:
+- name: 3onaco/golang-reference-api
+  newName: 929151461716.dkr.ecr.ap-southeast-1.amazonaws.com/app-golang-reference-api
+  newTag: v2022.06.30.2212
+
+patchesStrategicMerge:
+- deployment-config.yaml
+
+configMapGenerator:
+- name: golang-reference-api
+  behavior: merge
+  literals:
+  - APP_ENV=dev
+  - AWS_SM_REGION=ap-southeast-1
+  - AWS_SM_ID=adev/eks/golang-reference-api/app-credentials
+  - AWS_DEFAULT_REGION=ap-southeast-1

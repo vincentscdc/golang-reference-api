@@ -1,0 +1,35 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: golang-reference-api
+  annotations:
+    app-image-repo: 929151461716.dkr.ecr.ap-southeast-1.amazonaws.com/app-golang-reference-api
+spec:
+  replicas: 1
+  template:
+    annotations:  
+      linkerd.io/inject: enabled    
+    spec:
+      nodeSelector:
+        group: adev-app-main-worker-general
+      containers:
+      - name: api
+        env:
+        - name: APP_HOST
+          value: localhost
+        - name: APP_ENV
+          value: dev
+        - name: AWS_SM_REGION
+          value: ap-southeast-1
+        - name: AWS_SM_ID
+          value: adev/eks/golang-reference-api/app-credentials
+        - name: AWS_DEFAULT_REGION
+          value: ap-southeast-1
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+          limits:
+            cpu: 100m
+            memory: 100Mi
