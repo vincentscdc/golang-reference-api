@@ -7,9 +7,7 @@ metadata:
     app-image-repo: 929151461716.dkr.ecr.ap-southeast-1.amazonaws.com/app-golang-reference-api
 spec:
   replicas: 1
-  template:
-    annotations:  
-      linkerd.io/inject: enabled    
+  template: 
     spec:
       nodeSelector:
         group: adev-app-main-worker-general
