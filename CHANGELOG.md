@@ -1,6 +1,16 @@
-## Unreleased (5ae1b94..5ae1b94)
+## Unreleased (66b8ae0..66b8ae0)
+#### Bug Fixes
+- deployment 1.22 - (66b8ae0) - Vincent Serpoul
+
+- - -
+
+## Unreleased (5ae1b94..1d3a19a)
 #### Bug Fixes
 - namespace fix in circleci - (5ae1b94) - Vincent Serpoul
+#### Continuous Integration
+- deploy tag v2022.07.15.1029 to adev - (1d3a19a) - Vincent Serpoul
+#### Miscellaneous Chores
+- update CHANGELOG.md for v2022.07.15.1020 - (6b6f81a) - Vincent Serpoul
 
 - - -
 
