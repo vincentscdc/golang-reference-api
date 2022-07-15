@@ -16,12 +16,3 @@ images:
 
 patchesStrategicMerge:
 - deployment-config.yaml
-
-configMapGenerator:
-- name: golang-reference-api
-  behavior: merge
-  literals:
-  - APP_ENV=dev
-  - AWS_SM_REGION=ap-southeast-1
-  - AWS_SM_ID=adev/eks/golang-reference-api/app-credentials
-  - AWS_DEFAULT_REGION=ap-southeast-1
