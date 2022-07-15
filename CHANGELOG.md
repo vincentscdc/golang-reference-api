@@ -1,6 +1,16 @@
-## Unreleased (66b8ae0..66b8ae0)
+## Unreleased (184c1a5..184c1a5)
+#### Bug Fixes
+- deployment 1.22, remove annotations from yaml - (184c1a5) - Vincent Serpoul
+
+- - -
+
+## Unreleased (66b8ae0..8492e01)
 #### Bug Fixes
 - deployment 1.22 - (66b8ae0) - Vincent Serpoul
+#### Continuous Integration
+- deploy tag v2022.07.15.1050 to adev - (8492e01) - Vincent Serpoul
+#### Miscellaneous Chores
+- update CHANGELOG.md for v2022.07.15.1029 - (bc0535e) - Vincent Serpoul
 
 - - -
 
