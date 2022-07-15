@@ -1,6 +1,16 @@
-## Unreleased (0da4caa..0da4caa)
+## Unreleased (5ae1b94..5ae1b94)
+#### Bug Fixes
+- namespace fix in circleci - (5ae1b94) - Vincent Serpoul
+
+- - -
+
+## Unreleased (0da4caa..9038e7c)
 #### Bug Fixes
 - deployment folder yaml for dev to 1.22 - (0da4caa) - Vincent Serpoul
+#### Continuous Integration
+- deploy tag v2022.07.15.1020 to adev - (9038e7c) - Vincent Serpoul
+#### Miscellaneous Chores
+- update CHANGELOG.md for v2022.07.15.1019 - (2f9155c) - Vincent Serpoul
 
 - - -
 
