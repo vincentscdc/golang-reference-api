@@ -1,7 +1,17 @@
-## Unreleased (dd9126f..a32f82b)
+## Unreleased (0da4caa..0da4caa)
+#### Bug Fixes
+- deployment folder yaml for dev to 1.22 - (0da4caa) - Vincent Serpoul
+
+- - -
+
+## Unreleased (dd9126f..807cd7a)
 #### Bug Fixes
 - migration to cluster EKS 1.22 dev - (a32f82b) - Vincent Serpoul
 - go version - (dd9126f) - Vincent Serpoul
+#### Continuous Integration
+- deploy tag v2022.07.15.1019 to adev - (807cd7a) - Vincent Serpoul
+#### Miscellaneous Chores
+- update CHANGELOG.md for v2022.07.13.2131 - (387bebb) - Vincent Serpoul
 
 - - -
 
