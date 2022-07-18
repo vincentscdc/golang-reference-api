@@ -1,6 +1,17 @@
-## Unreleased (184c1a5..184c1a5)
+## Unreleased (f08627d..2a059b4)
+#### Miscellaneous Chores
+- update trivy version - (2a059b4) - Vincent Serpoul
+- update deps - (f08627d) - Vincent Serpoul
+
+- - -
+
+## Unreleased (184c1a5..4ab75ef)
 #### Bug Fixes
 - deployment 1.22, remove annotations from yaml - (184c1a5) - Vincent Serpoul
+#### Continuous Integration
+- deploy tag v2022.07.15.1100 to adev - (4ab75ef) - Vincent Serpoul
+#### Miscellaneous Chores
+- update CHANGELOG.md for v2022.07.15.1050 - (51d89a5) - Vincent Serpoul
 
 - - -
 
