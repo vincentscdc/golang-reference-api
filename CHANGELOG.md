@@ -1,6 +1,17 @@
-## Unreleased (28f1377..9072099)
+## Unreleased (44b2960..1945e5f)
+#### Bug Fixes
+- add main to push release - (1945e5f) - Vincent Serpoul
+- add missing type declaration in circleci (#98) - (44b2960) - khongwooilee
+
+- - -
+
+## Unreleased (28f1377..d4479db)
 #### Bug Fixes
 - switch to errors.As  (#97) - (28f1377) - BennTayCDC
+#### Continuous Integration
+- deploy tag v2022.07.18.1402 to adev - (d4479db) - Vincent Serpoul
+#### Miscellaneous Chores
+- update CHANGELOG.md for v2022.07.18.1024 - (cafc4d0) - Vincent Serpoul
 #### Refactoring
 - use project env var instead of context (#95) - (9072099) - khongwooilee
 #### Style
