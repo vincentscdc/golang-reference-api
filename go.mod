@@ -11,10 +11,10 @@ require (
 	github.com/ilyakaznacheev/cleanenv v1.3.0
 	github.com/jackc/pgconn v1.12.1
 	github.com/jackc/pgx/v4 v4.16.1
-	github.com/monacohq/golang-common/database/pginit v1.3.0
-	github.com/monacohq/golang-common/monitoring/otelinit v1.0.3
-	github.com/monacohq/golang-common/transport/http/handlerwrap/v2 v2.0.1
-	github.com/monacohq/golang-common/transport/http/middleware/cryptouseruuid v1.0.0
+	github.com/monacohq/golang-common/database/pginit v1.3.1
+	github.com/monacohq/golang-common/monitoring/otelinit v1.0.5
+	github.com/monacohq/golang-common/transport/http/handlerwrap/v2 v2.0.2
+	github.com/monacohq/golang-common/transport/http/middleware/cryptouseruuid v1.0.1
 	github.com/ory/dockertest/v3 v3.9.1
 	github.com/rs/zerolog v1.27.0
 	github.com/swaggo/http-swagger v1.3.0
@@ -45,7 +45,7 @@ require (
 	github.com/go-openapi/jsonreference v0.20.0 // indirect
 	github.com/go-openapi/spec v0.20.6 // indirect
 	github.com/go-openapi/swag v0.21.1 // indirect
-	github.com/goccy/go-json v0.9.8 // indirect
+	github.com/goccy/go-json v0.9.10 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510 // indirect
@@ -90,10 +90,10 @@ require (
 	go.uber.org/atomic v1.9.0 // indirect
 	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d // indirect
 	golang.org/x/net v0.0.0-20220708220712-1185a9018129 // indirect
-	golang.org/x/sys v0.0.0-20220712014510-0a85c31ab51e // indirect
+	golang.org/x/sys v0.0.0-20220715151400-c0bba94af5f8 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/tools v0.1.11 // indirect
-	google.golang.org/genproto v0.0.0-20220712132514-bdd2acd4974d // indirect
+	google.golang.org/genproto v0.0.0-20220715211116-798f69b842b9 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	olympos.io/encoding/edn v0.0.0-20201019073823-d3554ca0b0a3 // indirect
