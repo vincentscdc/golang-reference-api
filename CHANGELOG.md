@@ -1,5 +1,18 @@
-## Unreleased (f08627d..2a059b4)
+## Unreleased (28f1377..9072099)
+#### Bug Fixes
+- switch to errors.As  (#97) - (28f1377) - BennTayCDC
+#### Refactoring
+- use project env var instead of context (#95) - (9072099) - khongwooilee
+#### Style
+- use the new api standards (#96) - (3e8cf7a) - claire-tjq
+
+- - -
+
+## Unreleased (f08627d..be37901)
+#### Continuous Integration
+- deploy tag v2022.07.18.1024 to adev - (be37901) - Vincent Serpoul
 #### Miscellaneous Chores
+- update CHANGELOG.md for v2022.07.15.1100 - (ba26c56) - Vincent Serpoul
 - update trivy version - (2a059b4) - Vincent Serpoul
 - update deps - (f08627d) - Vincent Serpoul
 
