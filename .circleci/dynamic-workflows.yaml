@@ -68,6 +68,7 @@ jobs:
         type: string
       eks-aws-region:
         description: target aws region, for example ap-southeast-1
+        type: string
     steps:
       - checkout
       - aws-cli/setup:
