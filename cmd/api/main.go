@@ -47,7 +47,7 @@ func run() error {
 
 	cfg, err := configuration.GetConfig(configPath, currEnv)
 	if err != nil {
-		if errors.Is(err, configuration.MissingBaseConfigError{}) {
+		if errors.As(err, &configuration.MissingBaseConfigError{}) {
 			return fmt.Errorf("GetConfig failed: %w", err)
 		}
 
@@ -60,7 +60,7 @@ func run() error {
 		return fmt.Errorf("failed to setup repository: %w", err)
 	}
 
-	// Listen for syscall signals for process to interrupt/quit
+	// listen for syscall signals for process to interrupt/quit
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 

@@ -13,19 +13,29 @@ func Test_GetConfig(t *testing.T) {
 	tests := []struct {
 		name           string
 		path           string
-		expectedErr    error
+		env            string
+		expectedErr    interface{}
 		expectedVerRgx string
 	}{
 		{
 			name:           "happy path",
 			path:           "../../../config/api",
-			expectedErr:    MissingEnvConfigError{},
+			env:            "base",
+			expectedErr:    nil,
 			expectedVerRgx: "v[0-9]*\\.*[0-9]*\\.*[0-9]*",
 		},
 		{
-			name:           "unhappy path",
+			name:           "unhappy path - missing env config",
+			path:           "../../../config/api",
+			env:            "",
+			expectedErr:    &MissingEnvConfigError{},
+			expectedVerRgx: "v[0-9]*\\.*[0-9]*\\.*[0-9]*",
+		},
+		{
+			name:           "unhappy path - missing base config",
 			path:           "./wrongpath",
-			expectedErr:    MissingBaseConfigError{},
+			env:            "",
+			expectedErr:    &MissingBaseConfigError{},
 			expectedVerRgx: "",
 		},
 	}
@@ -36,9 +46,9 @@ func Test_GetConfig(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			cfg, err := GetConfig(tt.path, "")
+			cfg, err := GetConfig(tt.path, tt.env)
 
-			if !errors.Is(err, tt.expectedErr) {
+			if tt.expectedErr != nil && !errors.As(err, tt.expectedErr) {
 				t.Errorf("unexpected err received: %v", err)
 			}
 
@@ -78,25 +88,25 @@ func Test_MissingEnvConfigError(t *testing.T) {
 	}
 }
 
-func Test_IsMissingEnvConfigError(t *testing.T) {
+func Test_AsMissingEnvConfigError(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
 		name          string
 		err           error
-		comparableErr error
+		comparableErr interface{}
 		expectedBool  bool
 	}{
 		{
 			name:          "happy path",
 			err:           MissingEnvConfigError{env: "local", err: fmt.Errorf("some error")},
-			comparableErr: MissingEnvConfigError{},
+			comparableErr: &MissingEnvConfigError{},
 			expectedBool:  true,
 		},
 		{
 			name:          "unhappy path",
 			err:           MissingEnvConfigError{env: "local", err: fmt.Errorf("some error")},
-			comparableErr: MissingBaseConfigError{},
+			comparableErr: &MissingBaseConfigError{},
 			expectedBool:  false,
 		},
 	}
@@ -107,7 +117,7 @@ func Test_IsMissingEnvConfigError(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			if errors.Is(tt.err, tt.comparableErr) != tt.expectedBool {
+			if errors.As(tt.err, tt.comparableErr) != tt.expectedBool {
 				t.Errorf("unexpected bool")
 			}
 		})
@@ -142,25 +152,25 @@ func Test_MissingBaseConfigError(t *testing.T) {
 	}
 }
 
-func Test_IsMissingBaseConfigError(t *testing.T) {
+func Test_AsMissingBaseConfigError(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
 		name          string
 		err           error
-		comparableErr error
+		comparableErr interface{}
 		expectedBool  bool
 	}{
 		{
 			name:          "happy path",
 			err:           MissingBaseConfigError{err: fmt.Errorf("some error")},
-			comparableErr: MissingBaseConfigError{},
+			comparableErr: &MissingBaseConfigError{},
 			expectedBool:  true,
 		},
 		{
 			name:          "unhappy path",
 			err:           MissingBaseConfigError{err: fmt.Errorf("some error")},
-			comparableErr: MissingEnvConfigError{},
+			comparableErr: &MissingEnvConfigError{},
 			expectedBool:  false,
 		},
 	}
@@ -171,7 +181,7 @@ func Test_IsMissingBaseConfigError(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			if errors.Is(tt.err, tt.comparableErr) != tt.expectedBool {
+			if errors.As(tt.err, tt.comparableErr) != tt.expectedBool {
 				t.Errorf("unexpected bool")
 			}
 		})
