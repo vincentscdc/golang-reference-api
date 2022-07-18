@@ -60,28 +60,23 @@ jobs:
         type: string
         description: kubectl version
         default: "latest"
+      role-arn:
+        description: role-arn to deploy eks
+        type: string
+      eks-cluster-name:
+        description: target cluster to deploy, for example adev-app-main
+        type: string
+      eks-aws-region:
+        description: target aws region, for example ap-southeast-1
     steps:
       - checkout
-      - aws-cli/install 
-      - run:
-          name: "Authenticate and get AWS env"
-          command: |
-            read -r AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN \<<< \
-              $(aws sts assume-role-with-web-identity \
-               --role-arn ${AWS_ROLE_ARN} \
-               --role-session-name "CircleCI-${CIRCLE_WORKFLOW_ID}" \
-               --web-identity-token $CIRCLE_OIDC_TOKEN \
-               --duration-seconds 3600 \
-               --query 'Credentials.[AccessKeyId,SecretAccessKey,SessionToken]' \
-               --output text)
-            export AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN
-            aws sts get-caller-identity
-            echo "export AWS_ACCESS_KEY_ID=\"$AWS_ACCESS_KEY_ID\"" >> $BASH_ENV
-            echo "export AWS_SECRET_ACCESS_KEY=\"$AWS_SECRET_ACCESS_KEY\"" >> $BASH_ENV
-            echo "export AWS_SESSION_TOKEN=\"$AWS_SESSION_TOKEN\"" >> $BASH_ENV
+      - aws-cli/setup:
+          profile-name: default
+      - aws-cli/assume-role-with-web-identity:
+          role-arn: << parameters.role-arn >>
       - aws-eks/update-kubeconfig-with-authenticator:
-          aws-region: ${AWS_REGION}
-          cluster-name: ${EKS_CLUSTER_NAME}
+          aws-region: << parameters.eks-aws-region >>
+          cluster-name: << parameters.eks-cluster-name >>
           install-kubectl: true
           kubectl-version: << parameters.kubectl-version >>
       - run:
@@ -145,8 +140,10 @@ workflows:
     when: << pipeline.parameters.dev-changed >>
     jobs:
       - deploy-api-kustomize:
-          context: << pipeline.parameters.app_name >>-dev
           kustomize-folder: adev-app-main-122
+          role-arn: ${AWS_ROLE_ARN_DEV}
+          eks-cluster-name: ${EKS_CLUSTER_NAME_DEV}
+          eks-aws-region: ${EKS_AWS_REGION_DEV}
           filters:
             tags:
               only: /.*/
@@ -155,8 +152,10 @@ workflows:
     when: << pipeline.parameters.sta-changed >>
     jobs:
       - deploy-api-kustomize:
-          context: << pipeline.parameters.app_name >>-staging
           kustomize-folder: asta-app-main
+          role-arn: ${AWS_ROLE_ARN_STAGING}
+          eks-cluster-name: ${EKS_CLUSTER_NAME_STAGING}
+          eks-aws-region: ${EKS_AWS_REGION_STAGING}
           filters:
             tags:
               only: /.*/
@@ -168,7 +167,7 @@ workflows:
     when: << pipeline.parameters.pro-changed >>
     jobs:
       - slack/on-hold:
-          context: << pipeline.parameters.app_name >>-prod
+          context: slack-notification
           mentions: "@channel"
           filters:
             branches:
@@ -177,7 +176,7 @@ workflows:
             tags:
               only: /.*/
       - send-slack-changelog:
-          context: << pipeline.parameters.app_name >>-prod
+          context: slack-notification
           requires:
             - slack/on-hold
           filters:
@@ -198,7 +197,9 @@ workflows:
               only: /.*/
       # Note: this app will not be deployed in production, hence the following code snippet is commented out and only for reference
       # - deploy-api-kustomize:
-      #     context: << pipeline.parameters.app_name >>-prod
+      #     role-arn: ${AWS_ROLE_ARN_PRODUCTION}
+      #     eks-cluster-name: ${EKS_CLUSTER_NAME_PRODUCTION}
+      #     eks-aws-region: ${EKS_AWS_REGION_PRODUCTION}
       #     requires:
       #       - pause_workflow
       #     kustomize-folder: apro-app-main

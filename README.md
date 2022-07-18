@@ -6,16 +6,26 @@
 Steps for preparing the project in CircleCI
 1. Create Project
 1. Add User Key (?)
-1. Create CircleCI Context to provide parameters
+1. Create Project Environment Variable to provide parameters
     | Name |
     |---|
     | AWS_ECR_ACCESS_KEY_ID |
     | AWS_ECR_ACCOUNT_URL |
     | AWS_ECR_REGISTRY_ID |
     | AWS_ECR_SECRET_ACCESS_KEY |
-    | AWS_REGION |
-    | EKS_CLUSTER_NAME |
-    | EKS_NAMESPACE |
+    | AWS_ECR_REGION |
+    | AWS_ROLE_ARN_DEV |
+    | EKS_CLUSTER_NAME_DEV |
+    | EKS_NAMESPACE_DEV |
+    | EKS_AWS_REGION_DEV |
+    | AWS_ROLE_ARN_STAGING |
+    | EKS_CLUSTER_NAME_STAGING |
+    | EKS_NAMESPACE_STAGING |
+    | EKS_AWS_REGION_STAGING |
+    | AWS_ROLE_ARN_PRODUCTION |
+    | EKS_CLUSTER_NAME_PRODUCTION |
+    | EKS_NAMESPACE_PRODUCTION |
+    | EKS_AWS_REGION_PRODUCTION |
 1. Modify data in .circleci/config.yml
     1. deployment-name: name of Kubernetes deployment (set with infra team)
     1. context: CircleCI context set for different phases (set with infra team)

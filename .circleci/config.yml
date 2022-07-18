@@ -52,7 +52,7 @@ commands:
         description: can be a tag (v1.0.1) or a commit sha1 ("${CIRCLE_SHA1}") for example
     steps:
       - aws-ecr/ecr-login:
-          region: AWS_REGION
+          region: AWS_ECR_REGION
           aws-access-key-id: AWS_ECR_ACCESS_KEY_ID
           aws-secret-access-key: AWS_ECR_SECRET_ACCESS_KEY
       - run:
@@ -131,10 +131,17 @@ jobs:
   docker-build-tag-push:
     docker:
       - image: cimg/base:stable
+    parameters:
+      ecr-register-id:
+        type: string
+        description: aws ecr register id
+      ecr-aws-region:
+        type: string
+        description: aws ecr region
     steps:
       - docker-build
       - ecr-push:
-          image-name: "${AWS_ECR_REGISTRY_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/app-<< pipeline.parameters.app_name >>"
+          image-name: "<< parameters.ecr-register-id >>.dkr.ecr.<< parameters.ecr-aws-region >>.amazonaws.com/app-<< pipeline.parameters.app_name >>"
           image-tag: "${CIRCLE_TAG:-$CIRCLE_SHA1}"
 
 workflows:
@@ -158,7 +165,8 @@ workflows:
             tags:
               only: /.*/
       - docker-build-tag-push:
-          context: << pipeline.parameters.app_name >>-dev
+          ecr-register-id: ${AWS_ECR_REGISTRY_ID}
+          ecr-aws-region: ${AWS_ECR_REGION}
           requires:
             - linter
             - test
