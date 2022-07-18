@@ -1,14 +1,12 @@
 package internalfacing
 
 import (
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
 	"github.com/rs/zerolog"
 
@@ -22,8 +20,6 @@ func TestAddRoutes(t *testing.T) {
 
 	log := zerolog.Nop().With().Logger()
 
-	userID := uuid.Must(uuid.NewV4())
-
 	tests := []struct {
 		name                   string
 		httpMethod             string
@@ -34,10 +30,11 @@ func TestAddRoutes(t *testing.T) {
 		{
 			name:       "happy path for creating a pending payment plan",
 			httpMethod: "POST",
-			urlPath:    fmt.Sprintf("/api/internal/pay_later/users/%s/payment_plans", userID.String()),
+			urlPath:    "/internal/v1/payment-plans",
 			reqBody: `{
 					"payment": {
 						"id": "03baa9e6-6ed6-4868-9ef9-b99c8452f270",
+						"user_id": "03baa9e6-6ed6-4868-9ef9-b99c8452f270",
 						"currency": "usdc",
 						"total_amount": "100.0",
 						"installments": [
@@ -51,18 +48,19 @@ func TestAddRoutes(t *testing.T) {
 		{
 			name:       "happy path for completing payment plan",
 			httpMethod: "POST",
-			urlPath: fmt.Sprintf(
-				"/api/internal/pay_later/users/%s/payment_plans/03baa9e6-6ed6-4868-9ef9-b99c8452f270/complete",
-				userID.String(),
-			),
-			reqBody:                `{}`,
+			urlPath:    "/internal/v1/payment-plans/03baa9e6-6ed6-4868-9ef9-b99c8452f270/complete",
+			reqBody: `{
+						"payment": {
+							"user_id": "03baa9e6-6ed6-4868-9ef9-b99c8452f270"
+						}
+					}`,
 			expectedHTTPStatusCode: http.StatusOK,
 		},
 	}
 
 	paymentService := servicemock.NewMockPaymentPlanService(gomock.NewController(t))
 	paymentService.EXPECT().
-		CreatePendingPaymentPlan(gomock.Any(), gomock.Any(), gomock.Any()).
+		CreatePendingPaymentPlan(gomock.Any(), gomock.Any()).
 		Return(&service.PaymentPlans{}, nil)
 
 	paymentService.EXPECT().
@@ -74,7 +72,7 @@ func TestAddRoutes(t *testing.T) {
 
 		t.Run(tt.name, func(t *testing.T) {
 			r := chi.NewRouter()
-			AddRoutes(r, &log, rest.ChiNamedURLParamsGetter, paymentService)
+			AddRoutes(r, &log, rest.ChiNamedURLParamsGetter, paymentService, "v1")
 
 			srv := httptest.NewServer(r)
 			defer srv.Close()

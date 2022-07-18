@@ -57,11 +57,11 @@ func (p *PaymentServiceImp) GetPaymentPlanByUserID(ctx context.Context, userID u
 
 func (p *PaymentServiceImp) CreatePendingPaymentPlan(
 	ctx context.Context,
-	userID uuid.UUID,
 	paymentPlan *CreatePaymentPlanParams,
 ) (*PaymentPlans, error) {
 	plan := &PaymentPlans{
 		ID:          paymentPlan.ID.String(),
+		UserID:      paymentPlan.UserID.String(),
 		Currency:    paymentPlan.Currency,
 		TotalAmount: paymentPlan.TotalAmount,
 		Status:      paymentPlanStatusPending,
@@ -89,7 +89,7 @@ func (p *PaymentServiceImp) CreatePendingPaymentPlan(
 		plan.Installments = append(plan.Installments, newInst)
 	}
 
-	p.memoryStorage[userID] = append(p.memoryStorage[userID], *plan)
+	p.memoryStorage[paymentPlan.UserID] = append(p.memoryStorage[paymentPlan.UserID], *plan)
 
 	return plan, nil
 }
@@ -97,10 +97,10 @@ func (p *PaymentServiceImp) CreatePendingPaymentPlan(
 // CompletePaymentPlanCreation Complete and paid the record of the first installments
 func (p *PaymentServiceImp) CompletePaymentPlanCreation(
 	ctx context.Context,
-	userID uuid.UUID,
 	paymentPlanID uuid.UUID,
+	paymentPlan *CompletePaymentPlanParams,
 ) (*PaymentPlans, error) {
-	plan, ok := p.memoryStorage[userID]
+	plan, ok := p.memoryStorage[paymentPlan.UserID]
 	if !ok {
 		return nil, ErrRecordNotFound
 	}

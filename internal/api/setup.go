@@ -51,9 +51,9 @@ func (s *API) setupHTTPServer(repository repo.Repository) {
 	paymentService := service.NewPaymentPlanService()
 	paymentService.UseRepo(repository)
 
-	httpRouter.Route("/"+s.cfg.Application.Version, func(r chi.Router) {
-		userfacing.AddRoutes(r, &log.Logger, paymentService)
-		internalfacing.AddRoutes(r, &log.Logger, rest.ChiNamedURLParamsGetter, paymentService)
+	httpRouter.Route("/", func(r chi.Router) {
+		userfacing.AddRoutes(r, &log.Logger, paymentService, s.cfg.Application.Version)
+		internalfacing.AddRoutes(r, &log.Logger, rest.ChiNamedURLParamsGetter, paymentService, s.cfg.Application.Version)
 	})
 
 	s.httpServer = &http.Server{

@@ -17,6 +17,9 @@ type CreatePendingPaymentPlanRequest struct {
 type CreatePendingPaymentPlanResponse struct {
 	PendingPayment service.PaymentPlans `json:"payment"`
 }
+type CompletePaymentPlanRequest struct {
+	Payment service.CompletePaymentPlanParams `json:"payment"`
+}
 
 type CompletePaymentPlanResponse struct {
 	Payment service.PaymentPlans `json:"payment"`
@@ -31,33 +34,22 @@ type ListPaymentPlanResponse struct {
 // @Description pre creates a payment plan
 // @Tags payment_plan
 // @Produce json
-// @Router /api/internal/pay_later/users/{user_uuid}/payment_plans [post]
+// @Router /internal/v1/payment_plans [post]
 // @Param pre_create_payment_plan_request body CreatePendingPaymentPlanRequest true "Pre create payment plan reqBody"
-// @Param user_uuid path string true "User UUID"
-// @Success 200
+// @Success 200 {object} CreatePendingPaymentPlanResponse
 // @Failure 400 {object} handlerwrap.ErrorResponse "bad reqBody"
 // @Failure 500 {object} handlerwrap.ErrorResponse "internal error"
 func createPendingPaymentPlanHandler(
-	paramsGetter handlerwrap.NamedURLParamsGetter,
 	paymentService service.PaymentPlanService,
 ) handlerwrap.TypedHandler {
 	return func(req *http.Request) (*handlerwrap.Response, *handlerwrap.ErrorResponse) {
-		var (
-			userUUID *uuid.UUID
-			request  CreatePendingPaymentPlanRequest
-			respErr  *handlerwrap.ErrorResponse
-		)
-
-		userUUID, respErr = parseUUIDFormatParam(req.Context(), paramsGetter, urlParamUserUUID)
-		if respErr != nil {
-			return nil, respErr
-		}
+		var request CreatePendingPaymentPlanRequest
 
 		if errResp := handlerwrap.BindBody(req, &request); errResp != nil {
 			return nil, errResp
 		}
 
-		paymentPlan, err := paymentService.CreatePendingPaymentPlan(req.Context(), *userUUID, &request.PendingPayment)
+		paymentPlan, err := paymentService.CreatePendingPaymentPlan(req.Context(), &request.PendingPayment)
 		if err != nil {
 			return nil, rest.ServiceErrorToErrorResp(err)
 		}
@@ -78,10 +70,10 @@ func createPendingPaymentPlanHandler(
 // @Description completes a payment plan
 // @Tags payment_plan
 // @Produce json
-// @Router /api/internal/pay_later/users/{user_uuid}/payment_plans/{uuid}/complete [post]
-// @Param user_uuid path string true "User UUID"
+// @Router /internal/v1/payment-plans/{uuid}/complete [post]
+// @Param complete_payment_plan_request body CompletePaymentPlanRequest true "Complete payment plan reqBody"
 // @Param uuid path string true "Payment Plan UUID"
-// @Success 200
+// @Success 200 {object} CompletePaymentPlanResponse
 // @Failure 400 {object} handlerwrap.ErrorResponse "bad reqBody"
 // @Failure 401 {object} handlerwrap.ErrorResponse "payment plan not belongs to user"
 // @Failure 403 {object} handlerwrap.ErrorResponse "payment plan is not in pending"
@@ -94,13 +86,12 @@ func completePaymentPlanHandler(
 	return func(req *http.Request) (*handlerwrap.Response, *handlerwrap.ErrorResponse) {
 		var (
 			paymentUUID *uuid.UUID
-			userUUID    *uuid.UUID
 			respErr     *handlerwrap.ErrorResponse
+			request     CompletePaymentPlanRequest
 		)
 
-		userUUID, respErr = parseUUIDFormatParam(req.Context(), paramsGetter, urlParamUserUUID)
-		if respErr != nil {
-			return nil, respErr
+		if errResp := handlerwrap.BindBody(req, &request); errResp != nil {
+			return nil, errResp
 		}
 
 		paymentUUID, respErr = parseUUIDFormatParam(req.Context(), paramsGetter, urlParamPaymentUUID)
@@ -108,7 +99,7 @@ func completePaymentPlanHandler(
 			return nil, respErr
 		}
 
-		payment, err := paymentService.CompletePaymentPlanCreation(req.Context(), *userUUID, *paymentUUID)
+		payment, err := paymentService.CompletePaymentPlanCreation(req.Context(), *paymentUUID, &request.Payment)
 		if err != nil {
 			return nil, rest.ServiceErrorToErrorResp(err)
 		}

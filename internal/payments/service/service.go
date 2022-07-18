@@ -15,15 +15,14 @@ type PaymentPlanService interface {
 	// CreatePendingPaymentPlan
 	CreatePendingPaymentPlan(
 		ctx context.Context,
-		userID uuid.UUID,
 		paymentPlan *CreatePaymentPlanParams,
 	) (*PaymentPlans, error)
 
 	// CompletePaymentPlanCreation
 	CompletePaymentPlanCreation(
 		ctx context.Context,
-		userID uuid.UUID,
 		paymentPlanID uuid.UUID,
+		paymentPlan *CompletePaymentPlanParams,
 	) (*PaymentPlans, error)
 }
 
@@ -37,6 +36,7 @@ type PaymentPlanInstallment struct {
 
 type PaymentPlans struct {
 	ID           string `json:"id"`
+	UserID       string `json:"user_id"`
 	Currency     string `json:"currency"`
 	TotalAmount  string `json:"total_amount"`
 	Status       string `json:"status"`
@@ -52,7 +52,12 @@ type PaymentPlanInstallmentParams struct {
 
 type CreatePaymentPlanParams struct {
 	ID           uuid.UUID `json:"id"`
+	UserID       uuid.UUID `json:"user_id"`
 	Currency     string    `json:"currency"`
 	TotalAmount  string    `json:"total_amount"`
 	Installments []PaymentPlanInstallmentParams
+}
+
+type CompletePaymentPlanParams struct {
+	UserID uuid.UUID `json:"user_id"`
 }

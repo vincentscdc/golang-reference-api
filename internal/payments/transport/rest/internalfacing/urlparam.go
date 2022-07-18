@@ -8,7 +8,6 @@ import (
 )
 
 const (
-	urlParamUserUUID    = "user_uuid"
 	urlParamPaymentUUID = "payment_uuid"
 )
 

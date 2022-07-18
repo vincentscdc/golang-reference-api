@@ -30,7 +30,7 @@ func TestAddRoutes(t *testing.T) {
 		{
 			name:                   "happy path for payment_plans",
 			httpMethod:             "GET",
-			urlPath:                "/api/pay_later/payment_plans",
+			urlPath:                "/api/v1/payment-plans",
 			expectedHTTPStatusCode: http.StatusOK,
 		},
 	}
@@ -47,7 +47,7 @@ func TestAddRoutes(t *testing.T) {
 			t.Parallel()
 
 			r := chi.NewRouter()
-			AddRoutes(r, &log, paymentService)
+			AddRoutes(r, &log, paymentService, "v1")
 
 			srv := httptest.NewServer(r)
 			defer srv.Close()

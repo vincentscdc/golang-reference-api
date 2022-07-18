@@ -210,7 +210,7 @@ migration-local-dev:
 ###########
 
 swagger-gen:
-	swag init -d ./cmd/api --parseDependency --outputTypes go --output "./internal/docs/"
+	swag init -d ./cmd/api --parseDependency --outputTypes go --output "./internal/payments/docs/"
 
 
 ###########

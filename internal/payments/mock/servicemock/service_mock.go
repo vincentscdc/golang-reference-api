@@ -37,33 +37,33 @@ func (m *MockPaymentPlanService) EXPECT() *MockPaymentPlanServiceMockRecorder {
 }
 
 // CompletePaymentPlanCreation mocks base method.
-func (m *MockPaymentPlanService) CompletePaymentPlanCreation(ctx context.Context, userID, paymentPlanID uuid.UUID) (*service.PaymentPlans, error) {
+func (m *MockPaymentPlanService) CompletePaymentPlanCreation(ctx context.Context, paymentPlanID uuid.UUID, paymentPlan *service.CompletePaymentPlanParams) (*service.PaymentPlans, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CompletePaymentPlanCreation", ctx, userID, paymentPlanID)
+	ret := m.ctrl.Call(m, "CompletePaymentPlanCreation", ctx, paymentPlanID, paymentPlan)
 	ret0, _ := ret[0].(*service.PaymentPlans)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CompletePaymentPlanCreation indicates an expected call of CompletePaymentPlanCreation.
-func (mr *MockPaymentPlanServiceMockRecorder) CompletePaymentPlanCreation(ctx, userID, paymentPlanID interface{}) *gomock.Call {
+func (mr *MockPaymentPlanServiceMockRecorder) CompletePaymentPlanCreation(ctx, paymentPlanID, paymentPlan interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CompletePaymentPlanCreation", reflect.TypeOf((*MockPaymentPlanService)(nil).CompletePaymentPlanCreation), ctx, userID, paymentPlanID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CompletePaymentPlanCreation", reflect.TypeOf((*MockPaymentPlanService)(nil).CompletePaymentPlanCreation), ctx, paymentPlanID, paymentPlan)
 }
 
 // CreatePendingPaymentPlan mocks base method.
-func (m *MockPaymentPlanService) CreatePendingPaymentPlan(ctx context.Context, userID uuid.UUID, paymentPlan *service.CreatePaymentPlanParams) (*service.PaymentPlans, error) {
+func (m *MockPaymentPlanService) CreatePendingPaymentPlan(ctx context.Context, paymentPlan *service.CreatePaymentPlanParams) (*service.PaymentPlans, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreatePendingPaymentPlan", ctx, userID, paymentPlan)
+	ret := m.ctrl.Call(m, "CreatePendingPaymentPlan", ctx, paymentPlan)
 	ret0, _ := ret[0].(*service.PaymentPlans)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreatePendingPaymentPlan indicates an expected call of CreatePendingPaymentPlan.
-func (mr *MockPaymentPlanServiceMockRecorder) CreatePendingPaymentPlan(ctx, userID, paymentPlan interface{}) *gomock.Call {
+func (mr *MockPaymentPlanServiceMockRecorder) CreatePendingPaymentPlan(ctx, paymentPlan interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreatePendingPaymentPlan", reflect.TypeOf((*MockPaymentPlanService)(nil).CreatePendingPaymentPlan), ctx, userID, paymentPlan)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreatePendingPaymentPlan", reflect.TypeOf((*MockPaymentPlanService)(nil).CreatePendingPaymentPlan), ctx, paymentPlan)
 }
 
 // GetPaymentPlanByUserID mocks base method.

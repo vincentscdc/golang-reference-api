@@ -25,6 +25,7 @@ func TestPaymentServiceImp_CreatePendingPaymentPlan(t *testing.T) {
 
 	paymentPlanParams := &CreatePaymentPlanParams{
 		ID:          paymentPlanID,
+		UserID:      userID,
 		Currency:    "usdc",
 		TotalAmount: "1000",
 		Installments: []PaymentPlanInstallmentParams{
@@ -48,7 +49,7 @@ func TestPaymentServiceImp_CreatePendingPaymentPlan(t *testing.T) {
 
 	service := NewPaymentPlanService()
 
-	_, err := service.CreatePendingPaymentPlan(ctx, userID, paymentPlanParams)
+	_, err := service.CreatePendingPaymentPlan(ctx, paymentPlanParams)
 	if err != nil {
 		t.Errorf("failed to create payment plan %s", err.Error())
 	}
@@ -119,6 +120,7 @@ func TestPaymentServiceImp_GetPaymentPlanByUserID(t *testing.T) {
 
 	paymentPlanParams := &CreatePaymentPlanParams{
 		ID:          planID,
+		UserID:      userID,
 		Currency:    "usdc",
 		TotalAmount: "1000",
 		Installments: []PaymentPlanInstallmentParams{
@@ -132,7 +134,7 @@ func TestPaymentServiceImp_GetPaymentPlanByUserID(t *testing.T) {
 
 	service := NewPaymentPlanService()
 
-	_, err := service.CreatePendingPaymentPlan(ctx, userID, paymentPlanParams)
+	_, err := service.CreatePendingPaymentPlan(ctx, paymentPlanParams)
 	if err != nil {
 		t.Errorf("failed to create payment plan %s", err.Error())
 	}
@@ -208,6 +210,7 @@ func TestPaymentServiceImp_CompletePaymentPlanCreation(t *testing.T) {
 
 	paymentPlanParams := &CreatePaymentPlanParams{
 		ID:          paymentID,
+		UserID:      userID,
 		Currency:    "usdc",
 		TotalAmount: "1000",
 		Installments: []PaymentPlanInstallmentParams{
@@ -221,12 +224,14 @@ func TestPaymentServiceImp_CompletePaymentPlanCreation(t *testing.T) {
 
 	service := NewPaymentPlanService()
 
-	_, err := service.CreatePendingPaymentPlan(ctx, userID, paymentPlanParams)
+	_, err := service.CreatePendingPaymentPlan(ctx, paymentPlanParams)
 	if err != nil {
 		t.Errorf("failed to create payment plan %s", err.Error())
 	}
 
-	payment, err := service.CompletePaymentPlanCreation(ctx, userID, paymentID)
+	payment, err := service.CompletePaymentPlanCreation(ctx, paymentID, &CompletePaymentPlanParams{
+		UserID: userID,
+	})
 	if err != nil {
 		t.Errorf("failed to get payment plan %s", err.Error())
 	}
@@ -309,6 +314,7 @@ func TestPaymentServiceImp_CompletePaymentPlanCreationNotFound(t *testing.T) {
 
 	paymentPlanParams := &CreatePaymentPlanParams{
 		ID:          paymentID,
+		UserID:      userID,
 		Currency:    "usdc",
 		TotalAmount: "1000",
 		Installments: []PaymentPlanInstallmentParams{
@@ -322,7 +328,7 @@ func TestPaymentServiceImp_CompletePaymentPlanCreationNotFound(t *testing.T) {
 
 	service := NewPaymentPlanService()
 
-	_, err := service.CreatePendingPaymentPlan(ctx, userID, paymentPlanParams)
+	_, err := service.CreatePendingPaymentPlan(ctx, paymentPlanParams)
 	if err != nil {
 		t.Errorf("failed to create payment plan %s", err.Error())
 	}
@@ -332,7 +338,9 @@ func TestPaymentServiceImp_CompletePaymentPlanCreationNotFound(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			_, err := service.CompletePaymentPlanCreation(ctx, tt.userID, tt.paymentID)
+			_, err := service.CompletePaymentPlanCreation(ctx, tt.paymentID, &CompletePaymentPlanParams{
+				UserID: tt.userID,
+			})
 			if !errors.Is(err, ErrRecordNotFound) {
 				t.Errorf("failed to get error, expected: %v, got: %v", ErrRecordNotFound, err)
 			}
@@ -352,6 +360,7 @@ func TestPaymentServiceImp_CompletePaymentPlanCreationUUIDGenError(t *testing.T)
 
 	paymentPlanParams := &CreatePaymentPlanParams{
 		ID:          paymentID,
+		UserID:      userID,
 		Currency:    "usdc",
 		TotalAmount: "1000",
 		Installments: []PaymentPlanInstallmentParams{
@@ -370,7 +379,7 @@ func TestPaymentServiceImp_CompletePaymentPlanCreationUUIDGenError(t *testing.T)
 	service := NewPaymentPlanService()
 	service.SetUUIDGenerator(failedUUIDGen)
 
-	_, err := service.CreatePendingPaymentPlan(ctx, userID, paymentPlanParams)
+	_, err := service.CreatePendingPaymentPlan(ctx, paymentPlanParams)
 	if !errors.Is(err, ErrGenerateUUID) {
 		t.Errorf("error expected: %v, actual: %v", ErrGenerateUUID, err)
 	}

@@ -26,12 +26,8 @@ import (
 func Test_createPendingPaymentPlanHandlerInputError(t *testing.T) {
 	t.Parallel()
 
-	userID := uuid.Must(uuid.NewV4())
-
 	type args struct {
-		userUUID     uuid.UUID
-		reqBody      io.Reader
-		paramsGetter handlerwrap.NamedURLParamsGetter
+		reqBody io.Reader
 	}
 
 	tests := []struct {
@@ -42,20 +38,16 @@ func Test_createPendingPaymentPlanHandlerInputError(t *testing.T) {
 		{
 			name: "returns 400 if passing a broken reqBody",
 			args: args{
-				userUUID: userID,
 				reqBody: readerFunc(func(p []byte) (int, error) {
 					return 0, errors.New("failed")
 				}),
-				paramsGetter: rest.ChiNamedURLParamsGetter,
 			},
 			wantErrorResponse: &handlerwrap.ErrorResponse{StatusCode: http.StatusBadRequest},
 		},
 		{
 			name: "returns 400 if passing a invalid body",
 			args: args{
-				userUUID:     userID,
-				reqBody:      strings.NewReader(`{x}`),
-				paramsGetter: rest.ChiNamedURLParamsGetter,
+				reqBody: strings.NewReader(`{x}`),
 			},
 			wantErrorResponse: &handlerwrap.ErrorResponse{StatusCode: http.StatusBadRequest},
 		},
@@ -70,11 +62,8 @@ func Test_createPendingPaymentPlanHandlerInputError(t *testing.T) {
 			t.Parallel()
 
 			req := httptest.NewRequest("POST", "/", tt.args.reqBody)
-			setURLParams(req, map[string]string{
-				urlParamUserUUID: tt.args.userUUID.String(),
-			})
 
-			_, errRsp := createPendingPaymentPlanHandler(tt.args.paramsGetter, paymentService)(req)
+			_, errRsp := createPendingPaymentPlanHandler(paymentService)(req)
 			if errRsp != nil {
 				if errRsp.StatusCode != tt.wantErrorResponse.StatusCode {
 					t.Errorf("returned unexpected HTTP status code: got %v want %v", errRsp.StatusCode, tt.wantErrorResponse.StatusCode)
@@ -88,7 +77,7 @@ func Test_createPendingPaymentPlanHandlerInputError(t *testing.T) {
 	}
 }
 
-func Test_UserIDNotFound(t *testing.T) {
+func Test_completePaymentPlanHandlerUserIDNotFound(t *testing.T) {
 	t.Parallel()
 
 	paymentService := servicemock.NewMockPaymentPlanService(gomock.NewController(t))
@@ -101,10 +90,10 @@ func Test_UserIDNotFound(t *testing.T) {
 			name:   "complete payment handler",
 			hander: completePaymentPlanHandler(rest.ChiNamedURLParamsGetter, paymentService),
 		},
-		{
-			name:   "create pending payment handler",
-			hander: createPendingPaymentPlanHandler(rest.ChiNamedURLParamsGetter, paymentService),
-		},
+		// {
+		// 	name:   "create pending payment handler",
+		// 	hander: createPendingPaymentPlanHandler(paymentService),
+		// },
 	}
 
 	for _, tt := range tests {
@@ -139,6 +128,7 @@ func Test_createPendingPaymentPlanHandler(t *testing.T) {
 		request  = CreatePendingPaymentPlanRequest{
 			PendingPayment: service.CreatePaymentPlanParams{
 				ID:          planUUID,
+				UserID:      userUUID,
 				Currency:    "usdc",
 				TotalAmount: "100",
 				Installments: []service.PaymentPlanInstallmentParams{
@@ -170,7 +160,6 @@ func Test_createPendingPaymentPlanHandler(t *testing.T) {
 				},
 			},
 		}
-		paramsGetter = rest.ChiNamedURLParamsGetter
 		wantResponse = &handlerwrap.Response{
 			StatusCode: http.StatusOK,
 			Body:       response,
@@ -181,7 +170,6 @@ func Test_createPendingPaymentPlanHandler(t *testing.T) {
 	gomock.InOrder(
 		paymentService.EXPECT().CreatePendingPaymentPlan(
 			gomock.Any(),
-			userUUID,
 			gomock.Eq(&request.PendingPayment),
 		).Return(&response.PendingPayment, nil),
 	)
@@ -192,11 +180,8 @@ func Test_createPendingPaymentPlanHandler(t *testing.T) {
 	}
 
 	req := httptest.NewRequest("POST", "/", bytes.NewReader(reqBody))
-	setURLParams(req, map[string]string{
-		urlParamUserUUID: userUUID.String(),
-	})
 
-	resp, errRsp := createPendingPaymentPlanHandler(paramsGetter, paymentService)(req)
+	resp, errRsp := createPendingPaymentPlanHandler(paymentService)(req)
 	if errRsp != nil {
 		t.Errorf("returned unexpected error code: %v, err: %v", errRsp.StatusCode, errRsp.Error.Error())
 	}
@@ -270,6 +255,7 @@ func Test_createPendingPaymentPlanHandlerServiceError(t *testing.T) {
 		request  = CreatePendingPaymentPlanRequest{
 			PendingPayment: service.CreatePaymentPlanParams{
 				ID:          planUUID,
+				UserID:      userUUID,
 				Currency:    "usdc",
 				TotalAmount: "100",
 				Installments: []service.PaymentPlanInstallmentParams{
@@ -281,7 +267,6 @@ func Test_createPendingPaymentPlanHandlerServiceError(t *testing.T) {
 				},
 			},
 		}
-		paramsGetter = rest.ChiNamedURLParamsGetter
 	)
 
 	type args struct {
@@ -316,7 +301,6 @@ func Test_createPendingPaymentPlanHandlerServiceError(t *testing.T) {
 			gomock.InOrder(
 				paymentService.EXPECT().CreatePendingPaymentPlan(
 					gomock.Any(),
-					userUUID,
 					gomock.Eq(&request.PendingPayment),
 				).Return(nil, tt.args.err),
 			)
@@ -329,16 +313,13 @@ func Test_createPendingPaymentPlanHandlerServiceError(t *testing.T) {
 			}
 
 			req := httptest.NewRequest("POST", "/", bytes.NewReader(reqBody))
-			setURLParams(req, map[string]string{
-				urlParamUserUUID: userUUID.String(),
-			})
 
-			resp, errRsp := createPendingPaymentPlanHandler(paramsGetter, paymentService)(req)
+			resp, errRsp := createPendingPaymentPlanHandler(paymentService)(req)
 			if resp != nil {
 				t.Errorf("returned unexpected response: %v", resp)
 			}
 
-			if !reflect.DeepEqual(wantResponse, errRsp) {
+			if !reflect.DeepEqual(wantResponse, errRsp) { // nolint: deepequalerrors // linter bug these are responses, not errors
 				t.Errorf("returned unexpected err. expected: %v, actual: %v", wantResponse, errRsp)
 			}
 		})
@@ -347,11 +328,10 @@ func Test_createPendingPaymentPlanHandlerServiceError(t *testing.T) {
 
 func Benchmark_createPendingPaymentPlanHandler(b *testing.B) {
 	req := httptest.NewRequest("POST", "/", nil)
-	setURLParams(req, map[string]string{urlParamUserUUID: "b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5"})
 
 	paymentService := service.NewPaymentPlanService()
 
-	h := createPendingPaymentPlanHandler(rest.ChiNamedURLParamsGetter, paymentService)
+	h := createPendingPaymentPlanHandler(paymentService)
 
 	b.ResetTimer()
 
@@ -379,20 +359,31 @@ func Test_completePaymentPlanHandler(t *testing.T) {
 			StatusCode: http.StatusOK,
 			Body:       CompletePaymentPlanResponse{Payment: payment},
 		}
+		request = CompletePaymentPlanRequest{
+			Payment: service.CompletePaymentPlanParams{
+				UserID: userUUID,
+			},
+		}
 	)
 
 	paymentService := servicemock.NewMockPaymentPlanService(gomock.NewController(t))
-	req := httptest.NewRequest("POST", "/", nil)
+
+	reqBody, err := json.Marshal(request)
+	if err != nil {
+		t.Errorf("failed to unmarshal json")
+	}
+
+	req := httptest.NewRequest("POST", "/", bytes.NewReader(reqBody))
+
 	setURLParams(req, map[string]string{
 		urlParamPaymentUUID: paymentPlanID.String(),
-		urlParamUserUUID:    userUUID.String(),
 	})
 
 	gomock.InOrder(
 		paymentService.EXPECT().CompletePaymentPlanCreation(
 			gomock.Eq(req.Context()),
-			gomock.Eq(userUUID),
 			gomock.Eq(paymentPlanID),
+			gomock.Eq(&request.Payment),
 		).Return(&payment, nil),
 	)
 
@@ -412,9 +403,9 @@ func Test_completePaymentPlanHandlerParamsError(t *testing.T) {
 	userUUID := uuid.Must(uuid.NewV4())
 
 	type args struct {
-		userUUID        uuid.UUID
 		paymentPlanUUID string
 		paramsGetter    handlerwrap.NamedURLParamsGetter
+		request         CompletePaymentPlanRequest
 	}
 
 	tests := []struct {
@@ -426,19 +417,27 @@ func Test_completePaymentPlanHandlerParamsError(t *testing.T) {
 		{
 			name: "returns 400 if passing a invalid param uuid",
 			args: args{
-				userUUID:        userUUID,
 				paymentPlanUUID: "x",
 				paramsGetter:    rest.ChiNamedURLParamsGetter,
+				request: CompletePaymentPlanRequest{
+					Payment: service.CompletePaymentPlanParams{
+						UserID: userUUID,
+					},
+				},
 			},
 			wantErrorResponse: &handlerwrap.ErrorResponse{StatusCode: http.StatusBadRequest},
 		},
 		{
 			name: "returns 400 if passing a invalid param uuid",
 			args: args{
-				userUUID:        userUUID,
 				paymentPlanUUID: "x",
 				paramsGetter: func(ctx context.Context, key string) (string, *handlerwrap.ErrorResponse) {
 					return "", handlerwrap.MissingParamError{Name: key}.ToErrorResponse()
+				},
+				request: CompletePaymentPlanRequest{
+					Payment: service.CompletePaymentPlanParams{
+						UserID: userUUID,
+					},
 				},
 			},
 			wantErrorResponse: &handlerwrap.ErrorResponse{StatusCode: http.StatusBadRequest},
@@ -454,10 +453,15 @@ func Test_completePaymentPlanHandlerParamsError(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			req := httptest.NewRequest("POST", "/", nil)
+			reqBody, err := json.Marshal(tt.args.request)
+			if err != nil {
+				t.Errorf("failed to unmarshal json")
+			}
+
+			req := httptest.NewRequest("POST", "/", bytes.NewReader(reqBody))
+
 			setURLParams(req, map[string]string{
 				urlParamPaymentUUID: tt.args.paymentPlanUUID,
-				urlParamUserUUID:    tt.args.userUUID.String(),
 			})
 
 			resp, errRsp := completePaymentPlanHandler(tt.args.paramsGetter, paymentService)(req)
@@ -484,6 +488,11 @@ func Test_completePaymentPlanHandlerServiceError(t *testing.T) {
 		userUUID      = uuid.Must(uuid.NewV4())
 		paymentPlanID = uuid.Must(uuid.NewV4())
 		paramsGetter  = rest.ChiNamedURLParamsGetter
+		request       = CompletePaymentPlanRequest{
+			Payment: service.CompletePaymentPlanParams{
+				UserID: userUUID,
+			},
+		}
 	)
 
 	type args struct {
@@ -512,15 +521,20 @@ func Test_completePaymentPlanHandlerServiceError(t *testing.T) {
 			gomock.InOrder(
 				paymentService.EXPECT().CompletePaymentPlanCreation(
 					gomock.Any(),
-					gomock.Eq(userUUID),
 					gomock.Eq(paymentPlanID),
+					gomock.Eq(&request.Payment),
 				).Return(nil, service.ErrRecordNotFound),
 			)
 
-			req := httptest.NewRequest("POST", "/", nil)
+			reqBody, err := json.Marshal(request)
+			if err != nil {
+				t.Errorf("failed to unmarshal json")
+			}
+
+			req := httptest.NewRequest("POST", "/", bytes.NewReader(reqBody))
+
 			setURLParams(req, map[string]string{
 				urlParamPaymentUUID: paymentPlanID.String(),
-				urlParamUserUUID:    userUUID.String(),
 			})
 
 			resp, errRsp := completePaymentPlanHandler(paramsGetter, paymentService)(req)
@@ -538,7 +552,6 @@ func Test_completePaymentPlanHandlerServiceError(t *testing.T) {
 func Benchmark_completePaymentPlanHandler(b *testing.B) {
 	req := httptest.NewRequest("POST", "/", nil)
 	setURLParams(req, map[string]string{
-		urlParamUserUUID:    "b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5",
 		urlParamPaymentUUID: "b7202eb0-5bf0-475d-8ee2-d3d2c168a5d5",
 	})
 
