@@ -1,7 +1,17 @@
-## Unreleased (44b2960..1945e5f)
+## Unreleased (d5b187d..d5b187d)
+#### Bug Fixes
+- add required context in order to have circle oidc token being generated (#103) - (d5b187d) - khongwooilee
+
+- - -
+
+## Unreleased (44b2960..f90435d)
 #### Bug Fixes
 - add main to push release - (1945e5f) - Vincent Serpoul
 - add missing type declaration in circleci (#98) - (44b2960) - khongwooilee
+#### Continuous Integration
+- deploy tag v2022.07.18.1428 to adev - (f90435d) - Vincent Serpoul
+#### Miscellaneous Chores
+- update CHANGELOG.md for v2022.07.18.1402 - (618e6b1) - Vincent Serpoul
 
 - - -
 
