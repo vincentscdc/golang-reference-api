@@ -10,7 +10,7 @@ import (
 	"golangreferenceapi/internal/payments/mock/repomock"
 )
 
-func Test_Start(t *testing.T) {
+func TestStart(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()

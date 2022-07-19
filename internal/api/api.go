@@ -14,7 +14,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-// nolint: gochecknoglobals // only allowed global vars - filled at build time - do not change
+//nolint: gochecknoglobals // only allowed global vars - filled at build time - do not change
 var (
 	CommitTime = "dev"
 	CommitHash = "dev"

@@ -107,7 +107,7 @@ deploy-dev:
 	sed -i '' "s/newTag:.*/newTag: $(CAL_VER)/" $(DEV_YAML)
 	git commit -S -m "ci: deploy tag $(CAL_VER) to adev" $(DEV_YAML)
 	git tag $(CAL_VER)
-	git push --atomic origin main $(CAL_VER)
+	git push --atomic origin $(CAL_VER)
 
 deploy-staging: ## deploy to staging env with a release tag
 	@( \

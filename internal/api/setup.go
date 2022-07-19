@@ -36,7 +36,7 @@ func (s *API) setupHTTPServer(repository repo.Repository) {
 
 	httpRouter.Mount("/debug", middleware.Profiler())
 
-	httpRouter.Get("/sys/health", func(w http.ResponseWriter, r *http.Request) {
+	httpRouter.Get("/sys/health", func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusNoContent)
 	})
 

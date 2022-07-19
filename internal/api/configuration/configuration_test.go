@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func Test_GetConfig(t *testing.T) {
+func TestGetConfig(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -60,7 +60,7 @@ func Test_GetConfig(t *testing.T) {
 	}
 }
 
-func Test_MissingEnvConfigError(t *testing.T) {
+func TestMissingEnvConfigError(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -88,7 +88,7 @@ func Test_MissingEnvConfigError(t *testing.T) {
 	}
 }
 
-func Test_AsMissingEnvConfigError(t *testing.T) {
+func TestAsMissingEnvConfigError(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -124,7 +124,7 @@ func Test_AsMissingEnvConfigError(t *testing.T) {
 	}
 }
 
-func Test_MissingBaseConfigError(t *testing.T) {
+func TestMissingBaseConfigError(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -152,7 +152,7 @@ func Test_MissingBaseConfigError(t *testing.T) {
 	}
 }
 
-func Test_AsMissingBaseConfigError(t *testing.T) {
+func TestAsMissingBaseConfigError(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {

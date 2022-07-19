@@ -1,9 +1,10 @@
 [service]
-golangci-lint-version =  "1.46"
+golangci-lint-version =  "1.47"
 
 [linters]
 disable-all = true
 enable = [
+    "asasalint",
     "deadcode",
     "errcheck",
     "gosimple",
@@ -37,7 +38,7 @@ enable = [
     "forbidigo",
     "forcetypeassert",
     # "funlen", the complexity is covering most of issues
-    # "gci", it's hard to make gofumpt play well with gci
+    # "gci", use of gofumpt instead
     "gochecknoglobals",
     "gochecknoinits",
     "gocognit",
@@ -75,6 +76,7 @@ enable = [
     "noctx",
     "nolintlint",
     "nonamedreturns",
+    # "nosnakecase", https://github.com/sivchari/nosnakecase/issues/9
     "nosprintfhostport",
     "paralleltest",
     "prealloc",

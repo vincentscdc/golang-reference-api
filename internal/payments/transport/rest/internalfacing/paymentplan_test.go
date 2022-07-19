@@ -319,7 +319,8 @@ func Test_createPendingPaymentPlanHandlerServiceError(t *testing.T) {
 				t.Errorf("returned unexpected response: %v", resp)
 			}
 
-			if !reflect.DeepEqual(wantResponse, errRsp) { // nolint: deepequalerrors // linter bug these are responses, not errors
+			// nolint: deepequalerrors // linter bug these are responses, not errors
+			if !reflect.DeepEqual(wantResponse, errRsp) {
 				t.Errorf("returned unexpected err. expected: %v, actual: %v", wantResponse, errRsp)
 			}
 		})
