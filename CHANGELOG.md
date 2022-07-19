@@ -1,6 +1,16 @@
-## Unreleased (d5b187d..d5b187d)
+## Unreleased (1c1176c..1c1176c)
+#### Features
+- golangci lint 1.47 (#105) - (1c1176c) - vincentscdc
+
+- - -
+
+## Unreleased (d5b187d..104d5aa)
 #### Bug Fixes
 - add required context in order to have circle oidc token being generated (#103) - (d5b187d) - khongwooilee
+#### Continuous Integration
+- deploy tag v2022.07.19.1004 to adev - (104d5aa) - Vincent Serpoul
+#### Miscellaneous Chores
+- update CHANGELOG.md for v2022.07.18.1428 - (f5d4d9a) - Vincent Serpoul
 
 - - -
 
