@@ -141,6 +141,7 @@ workflows:
     when: << pipeline.parameters.dev-changed >>
     jobs:
       - deploy-api-kustomize:
+          context: slack-notification # technically the context doesn't need to have any env var but it's required according to https://circleci.com/docs/openid-connect-tokens
           kustomize-folder: adev-app-main-122
           role-arn: ${AWS_ROLE_ARN_DEV}
           eks-cluster-name: ${EKS_CLUSTER_NAME_DEV}
@@ -153,6 +154,7 @@ workflows:
     when: << pipeline.parameters.sta-changed >>
     jobs:
       - deploy-api-kustomize:
+          context: slack-notification # technically the context doesn't need to have any env var but it's required according to https://circleci.com/docs/openid-connect-tokens
           kustomize-folder: asta-app-main
           role-arn: ${AWS_ROLE_ARN_STAGING}
           eks-cluster-name: ${EKS_CLUSTER_NAME_STAGING}
@@ -198,6 +200,7 @@ workflows:
               only: /.*/
       # Note: this app will not be deployed in production, hence the following code snippet is commented out and only for reference
       # - deploy-api-kustomize:
+      #     context: slack-notification
       #     role-arn: ${AWS_ROLE_ARN_PRODUCTION}
       #     eks-cluster-name: ${EKS_CLUSTER_NAME_PRODUCTION}
       #     eks-aws-region: ${EKS_AWS_REGION_PRODUCTION}
