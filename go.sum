@@ -918,6 +918,8 @@ github.com/monacohq/golang-common/transport/http/handlerwrap/v3 v3.0.0 h1:aKjar+
 github.com/monacohq/golang-common/transport/http/handlerwrap/v3 v3.0.0/go.mod h1:4TJ0eSAISJN3g9gR6tq5LLVJQmDoprLGWD+GZnWvL1k=
 github.com/monacohq/golang-common/transport/http/middleware/cryptouseruuid v1.0.1 h1:ion9eMJPt9GyhJC8n2JrMlec8tEa3dUm5CO6/eWfT0w=
 github.com/monacohq/golang-common/transport/http/middleware/cryptouseruuid v1.0.1/go.mod h1:YnTuz9H/YCwozk1G1cnxPORboYO+HV0yFzYtYuNBIGE=
+github.com/monacohq/golang-common/transport/http/middleware/requestlogger v1.0.1 h1:+eis8EhAj33062kXe22cJfAfTBu1SaHz9YxgbdWK8NA=
+github.com/monacohq/golang-common/transport/http/middleware/requestlogger v1.0.1/go.mod h1:PhlXXsquB0J7kCFfZ2sdDKBsajB80CuEavVOQu9xU+s=
 github.com/montanaflynn/stats v0.0.0-20171201202039-1bf9dbcd8cbe/go.mod h1:wL8QJuTMNUDYhXwkmfOly8iTdp5TEcJFWZD2D7SIkUc=
 github.com/morikuni/aec v1.0.0 h1:nP9CBfwrvYnBRgY6qfDQkygYDmYwOilePFkwzv4dU8A=
 github.com/morikuni/aec v1.0.0/go.mod h1:BbKIizmSmc5MMPqRYbxO4ZU0S0+P200+tUnFx7PXmsc=

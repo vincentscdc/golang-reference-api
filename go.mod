@@ -15,6 +15,7 @@ require (
 	github.com/monacohq/golang-common/monitoring/otelinit v1.0.5
 	github.com/monacohq/golang-common/transport/http/handlerwrap/v3 v3.0.0
 	github.com/monacohq/golang-common/transport/http/middleware/cryptouseruuid v1.0.1
+	github.com/monacohq/golang-common/transport/http/middleware/requestlogger v1.0.1
 	github.com/ory/dockertest/v3 v3.9.1
 	github.com/rs/zerolog v1.27.0
 	github.com/swaggo/http-swagger v1.3.0

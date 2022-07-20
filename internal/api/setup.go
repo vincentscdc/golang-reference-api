@@ -14,6 +14,8 @@ import (
 	"golangreferenceapi/internal/payments/transport/rest/internalfacing"
 	"golangreferenceapi/internal/payments/transport/rest/userfacing"
 
+	"github.com/monacohq/golang-common/transport/http/middleware/requestlogger"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/rs/zerolog"
@@ -33,6 +35,7 @@ func (s *API) setupLog() {
 func (s *API) setupHTTPServer(repository repo.Repository) {
 	// main router
 	httpRouter := chi.NewRouter()
+	httpRouter.Use(requestlogger.RequestLogger(&log.Logger))
 
 	httpRouter.Mount("/debug", middleware.Profiler())
 
