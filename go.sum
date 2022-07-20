@@ -914,8 +914,8 @@ github.com/monacohq/golang-common/database/pginit v1.3.1 h1:VAcx0QAOr/Y+KWRAq2tU
 github.com/monacohq/golang-common/database/pginit v1.3.1/go.mod h1:z0CU0wL8x6t8Hq0NrRv7ruL7nYhWvwzzjLCODtyY0Vg=
 github.com/monacohq/golang-common/monitoring/otelinit v1.0.5 h1:RCxCupcm3eaekLospf3jBlICeouD6h8JsuaV9bACKas=
 github.com/monacohq/golang-common/monitoring/otelinit v1.0.5/go.mod h1:w+wFal1k8mfJAVEhSwD5ihw/r85RrLH/CnSrMawtnes=
-github.com/monacohq/golang-common/transport/http/handlerwrap/v2 v2.0.2 h1:tCOhIJhdIKfwqRCOgfbWhEMmcZaipDKKVssA7AoLLKU=
-github.com/monacohq/golang-common/transport/http/handlerwrap/v2 v2.0.2/go.mod h1:P2RkS4w8ILQQ44XK2NPD2j+SRZMiYGJjTyFNQeibsWk=
+github.com/monacohq/golang-common/transport/http/handlerwrap/v3 v3.0.0 h1:aKjar+3rIGex8oTsqOdJpc3LYRInM1DsxPRtgDzrBAY=
+github.com/monacohq/golang-common/transport/http/handlerwrap/v3 v3.0.0/go.mod h1:4TJ0eSAISJN3g9gR6tq5LLVJQmDoprLGWD+GZnWvL1k=
 github.com/monacohq/golang-common/transport/http/middleware/cryptouseruuid v1.0.1 h1:ion9eMJPt9GyhJC8n2JrMlec8tEa3dUm5CO6/eWfT0w=
 github.com/monacohq/golang-common/transport/http/middleware/cryptouseruuid v1.0.1/go.mod h1:YnTuz9H/YCwozk1G1cnxPORboYO+HV0yFzYtYuNBIGE=
 github.com/montanaflynn/stats v0.0.0-20171201202039-1bf9dbcd8cbe/go.mod h1:wL8QJuTMNUDYhXwkmfOly8iTdp5TEcJFWZD2D7SIkUc=

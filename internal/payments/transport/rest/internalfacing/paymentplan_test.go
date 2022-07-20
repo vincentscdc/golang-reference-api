@@ -15,7 +15,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	"github.com/monacohq/golang-common/transport/http/handlerwrap/v2"
+	"github.com/monacohq/golang-common/transport/http/handlerwrap/v3"
 
 	"golangreferenceapi/internal/payments/common"
 	"golangreferenceapi/internal/payments/mock/servicemock"
@@ -183,7 +183,7 @@ func Test_createPendingPaymentPlanHandler(t *testing.T) {
 
 	resp, errRsp := createPendingPaymentPlanHandler(paymentService)(req)
 	if errRsp != nil {
-		t.Errorf("returned unexpected error code: %v, err: %v", errRsp.StatusCode, errRsp.Error.Error())
+		t.Errorf("returned unexpected error code: %v, err: %v", errRsp.StatusCode, errRsp.Err.Error())
 	}
 
 	pendingPlanExpect, ok := wantResponse.Body.(CreatePendingPaymentPlanResponse)

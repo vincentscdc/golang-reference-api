@@ -17,7 +17,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/mock/gomock"
-	"github.com/monacohq/golang-common/transport/http/handlerwrap/v2"
+	"github.com/monacohq/golang-common/transport/http/handlerwrap/v3"
 )
 
 func Test_listPaymentPlansHandler_SuccessCase(t *testing.T) {
@@ -198,8 +198,8 @@ func Test_listPaymentPlansHandler_MissingUserID(t *testing.T) {
 	req := httptest.NewRequest("GET", "/", nil)
 
 	_, err := listPaymentPlansHandler(paymentService)(req)
-	if err != nil && !errors.As(err.Error, &cryptouseruuid.UserIDNotFoundError{}) {
-		t.Errorf("unexpected status code expect: %v, actual: %v", err.ErrorCode, http.StatusBadRequest)
+	if err != nil && !errors.As(err.Err, &cryptouseruuid.UserIDNotFoundError{}) {
+		t.Errorf("unexpected status code expect: %v, actual: %v", err.Error, http.StatusBadRequest)
 	}
 }
 

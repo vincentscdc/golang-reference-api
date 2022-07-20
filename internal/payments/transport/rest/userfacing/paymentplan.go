@@ -8,7 +8,7 @@ import (
 
 	"github.com/monacohq/golang-common/transport/http/middleware/cryptouseruuid"
 
-	"github.com/monacohq/golang-common/transport/http/handlerwrap/v2"
+	"github.com/monacohq/golang-common/transport/http/handlerwrap/v3"
 )
 
 const (

@@ -6,7 +6,7 @@ import (
 
 	"golangreferenceapi/internal/payments/service"
 
-	"github.com/monacohq/golang-common/transport/http/handlerwrap/v2"
+	"github.com/monacohq/golang-common/transport/http/handlerwrap/v3"
 )
 
 func ServiceErrorToErrorResp(err error) *handlerwrap.ErrorResponse {

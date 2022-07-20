@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/monacohq/golang-common/transport/http/handlerwrap/v2"
+	"github.com/monacohq/golang-common/transport/http/handlerwrap/v3"
 )
 
 func ChiNamedURLParamsGetter(ctx context.Context, key string) (string, *handlerwrap.ErrorResponse) {

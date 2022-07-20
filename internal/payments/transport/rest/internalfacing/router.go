@@ -4,7 +4,7 @@ import (
 	"golangreferenceapi/internal/payments/service"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/monacohq/golang-common/transport/http/handlerwrap/v2"
+	"github.com/monacohq/golang-common/transport/http/handlerwrap/v3"
 	"github.com/rs/zerolog"
 )
 
