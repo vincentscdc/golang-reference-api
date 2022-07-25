@@ -1,5 +1,15 @@
-## Unreleased (85243fb..e5dfd1a)
+## Unreleased (d500ce7..26f6a75)
 #### Miscellaneous Chores
+- add get-caller - (26f6a75) - Vincent Serpoul
+- remove wrong command - (d500ce7) - Vincent Serpoul
+
+- - -
+
+## Unreleased (85243fb..2112043)
+#### Continuous Integration
+- deploy tag v2022.07.25.1821 to adev - (2112043) - Vincent Serpoul
+#### Miscellaneous Chores
+- update CHANGELOG.md for v2022.07.25.1744 - (d291197) - Vincent Serpoul
 - test with special command - (e5dfd1a) - Vincent Serpoul
 - update ci deps - (85243fb) - Vincent Serpoul
 
