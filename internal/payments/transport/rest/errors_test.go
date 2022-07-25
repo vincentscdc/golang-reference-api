@@ -17,13 +17,28 @@ func TestServiceErrorToErrorResp(t *testing.T) {
 		statusCode int
 	}{
 		{
-			name:       "uuid generated error",
-			err:        service.ErrGenerateUUID,
+			name:       "create payment plan error",
+			err:        service.CreatePaymentPlanError{},
 			statusCode: http.StatusInternalServerError,
 		},
 		{
-			name:       "record not found",
-			err:        service.ErrRecordNotFound,
+			name:       "list payment plan by userid error",
+			err:        service.ListPaymentPlansByUserIDError{},
+			statusCode: http.StatusInternalServerError,
+		},
+		{
+			name:       "create payment installment error",
+			err:        service.CreatePaymentInstallmentError{},
+			statusCode: http.StatusInternalServerError,
+		},
+		{
+			name:       "list payment installment by planid error",
+			err:        service.ListPaymentInstallmentsByPlanIDError{},
+			statusCode: http.StatusInternalServerError,
+		},
+		{
+			name:       "payment record not found",
+			err:        service.PaymentRecordNotFoundError{},
 			statusCode: http.StatusNotFound,
 		},
 		{

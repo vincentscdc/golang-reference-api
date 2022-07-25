@@ -278,15 +278,15 @@ func Test_createPendingPaymentPlanHandlerServiceError(t *testing.T) {
 		args args
 	}{
 		{
-			name: "record not found",
+			name: "create payment plan error",
 			args: args{
-				err: service.ErrRecordNotFound,
+				err: service.CreatePaymentPlanError{},
 			},
 		},
 		{
-			name: "failed to generate uuid",
+			name: "create payment installment error",
 			args: args{
-				err: service.ErrGenerateUUID,
+				err: service.CreatePaymentInstallmentError{},
 			},
 		},
 	}
@@ -505,8 +505,16 @@ func Test_completePaymentPlanHandlerServiceError(t *testing.T) {
 		args args
 	}{
 		{
-			name: "record not found",
-			args: args{err: service.ErrRecordNotFound},
+			name: "list payment plans by user error",
+			args: args{err: service.ListPaymentPlansByUserIDError{}},
+		},
+		{
+			name: "list payment installment by plan error",
+			args: args{err: service.ListPaymentInstallmentsByPlanIDError{}},
+		},
+		{
+			name: "payment plan not found error",
+			args: args{err: service.PaymentRecordNotFoundError{}},
 		},
 	}
 
@@ -524,7 +532,7 @@ func Test_completePaymentPlanHandlerServiceError(t *testing.T) {
 					gomock.Any(),
 					gomock.Eq(paymentPlanID),
 					gomock.Eq(&request.Payment),
-				).Return(nil, service.ErrRecordNotFound),
+				).Return(nil, tt.args.err),
 			)
 
 			reqBody, err := json.Marshal(request)

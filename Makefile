@@ -18,6 +18,7 @@ test-race: ## launch all tests with race detection
 test-leak: ## launch all tests with leak detection (if possible)
 	go test ./internal/payments/transport/rest/userfacing/... -leak
 	go test ./internal/payments/transport/rest/internalfacing/... -leak
+	go test ./internal/payments/repo/memory/... -leak
 
 test-coverage-report:
 	go test -v  ./... -cover -race -covermode=atomic -coverprofile=./coverage.out

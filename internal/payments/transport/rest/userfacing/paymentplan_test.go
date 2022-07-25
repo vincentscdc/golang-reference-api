@@ -150,7 +150,7 @@ func Test_listPaymentPlansHandler_InternalError(t *testing.T) {
 		{
 			uid:  uuid.Must(uuid.NewV4()),
 			name: "function internal error",
-			err:  service.ErrRecordNotFound,
+			err:  service.ListPaymentPlansByUserIDError{},
 		},
 	}
 
