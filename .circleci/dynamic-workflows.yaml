@@ -80,8 +80,6 @@ jobs:
           cluster-name: << parameters.eks-cluster-name >>
           install-kubectl: true
           kubectl-version: << parameters.kubectl-version >>
-          command: |
-            aws sts get-caller-identity --no-cli-pager
       - run:
           name: Apply kustomization
           command: |
