@@ -1,6 +1,13 @@
-## Unreleased (1c1176c..1c1176c)
+## Unreleased (1c1176c..1024fe5)
+#### Continuous Integration
+- deploy tag v2022.07.19.1257 to adev - (1024fe5) - Vincent Serpoul
 #### Features
+- inmemory repo (#107) - (58960d0) - claire-tjq
+- use requestlogger (#109) - (018c2e6) - Hans Liu
+- upgrade handlerwrap v2 to v3 (#108) - (543aa63) - jefferson-crypto
 - golangci lint 1.47 (#105) - (1c1176c) - vincentscdc
+#### Miscellaneous Chores
+- update CHANGELOG.md for v2022.07.19.1004 - (737c6d9) - Vincent Serpoul
 
 - - -
 
