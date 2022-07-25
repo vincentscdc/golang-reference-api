@@ -75,6 +75,10 @@ jobs:
           profile-name: default
       - aws-cli/assume-role-with-web-identity:
           role-arn: << parameters.role-arn >>
+      - run:
+          name: echo aws caller
+          command: |
+            aws sts get-caller-identity --no-cli-pager
       - aws-eks/update-kubeconfig-with-authenticator:
           aws-region: << parameters.eks-aws-region >>
           cluster-name: << parameters.eks-cluster-name >>
